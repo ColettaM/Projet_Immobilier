@@ -1,7 +1,6 @@
 # Projet_Immobilier_SD
-I/Application de gestion immobilière pour un réseau d'agences.
-Ce projet vise à développer une application web permettant de gérer les vendeurs, acheteurs et agents immobiliers, tout en suivant les différentes étapes des transactions immobilières.
-II/Étapes du projet:
+Application de gestion immobilière pour un réseau d'agences.
+Ce projet vise à développer une application web permettant de gérer les vendeurs, acheteurs et agents immobiliers, tout en suivant les différentes étapes des transactions immobilières. Étapes du projet:
  1. Dans votre présentation :
  • un modèle relationnel des bases de données.
  • les modèles django correspondants.
