@@ -1,0 +1,42 @@
+Auteur: Coletta Moutsiha
+Date:03-Avril-2025
+###############################################################################
+			PROJET RESEAU AGENCE IMMOBILIERE 
+###############################################################################
+Prérequis : Avoir installer Django et PostgreSQL.
+
+
+1. Creation du projet django et de l'application
+__________________________________________________
+
+J'ai créé un projet Django, "projet_Immobiler".
+Il faut configuré le projet pour Postgre, penser à modifier le fichier "settings.py" au besoin (extrait ci-dessous).
+Remarque: le port est à modifier aussi au besoin.
+DATABASES = {
+            'default': {                         
+                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'NAME': 'nom_de_la_base_de_données',
+                'USER': 'postgres',
+                'PASSWORD': 'votre_mot_de_passe_PostegreSQL',
+                'HOST': 'localhost',
+                'PORT': '5432',  
+                }
+        }
+
+Ensuite j'ai crée une base de données et une application, "MonAppli_Immo" que j'ai référencé dans le projet.
+
+
+2/ CONCEPTION DU MODELES DES DONNEES
+__________________________________________________
+
+J'ai ensuite crée les classes de notre modèle Django basé sur le schéma de mon modele relationnel. 
+
+
+*****LA PROCHAINE ETAPE EST LE PEUPLEUMENT DE LA BASE DE DONNEES.*******
+
+
+
+
+
+
+
