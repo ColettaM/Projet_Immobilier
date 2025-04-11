@@ -1,0 +1,15 @@
+Auteur: Coletta Moutsiha
+Date:11-Avril-2025
+###############################################################################
+			PROJET RESEAU AGENCE IMMOBILIERE 
+###############################################################################
+
+
+J'ai modifié le modèle Django, en rajoutant des __str__(pour l'utilisateur) et des __repr__(pour debuguer).
+
+3/ PEUPLEMENT DE LA BASE DE DONNEES (AVEC PANDA)
+
+
+
+
+
