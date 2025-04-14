@@ -1,4 +1,5 @@
 from django.db import models
+from .choices import *
 
 # Create your models here.
 
@@ -10,8 +11,17 @@ class Agent(models.Model):
     telephone = models.CharField(max_length=20, blank=True, null=True)
 
     class Meta:
-        unique_together = ('nom', 'prenom')  # Empêche les doublons nom-prénom
-
+        unique_together = ('nom', 'prenom', 'email') # Empêche les doublons nom-prénom-email
+        ordering = ['nom', 'prenom']  # Tri par défaut sur le nom et prénom
+    
+    def save(self, *args, validate=True, **kwargs):
+        # Convertit l'email en minuscule avant de le sauvegarder
+        # Cela permet d'éviter les doublons avec des majuscules/minuscules différentes
+        self.email = self.email.lower()  # Normalisation 
+        if validate:
+            self.full_clean()  # Valide tous les champs + clean()
+        super().save(*args, **kwargs)
+        
     def __str__(self):
         # Format pour l'affichage
         # Affiche le nom, prénom, email et téléphone de l'agent
@@ -29,62 +39,79 @@ class Vendeur(models.Model):
     telephone = models.CharField(max_length=20, blank=True, null=True)
     
     class Meta:
-        unique_together = ('nom', 'prenom')
-    
+        unique_together = ('nom', 'prenom', 'email')
+        ordering = ['nom', 'prenom']  
+        
+    def save(self, *args, validate=True, **kwargs):
+        self.email = self.email.lower()
+        if validate:
+            self.full_clean()
+        super().save(*args, **kwargs)
+        
     def __str__(self):
         return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}"
     def __repr__(self):
-        return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}"
-
+        return self.__str__()
+    
+    
 # Modèle pour les biens immobiliers
 class BienImmobilier(models.Model):
-    CATEGORIES = [
-        ('vente', 'Vente'),
-        ('location', 'Location'),
-        ('colocation', 'Colocation'),
-        ('bureaux et commerce', 'Bureaux et Commerce'),
-    ]
-    ETATS = [
-        ('prospection', 'Prospection'),
-        ('estimation', 'Estimation'),
-        ('mise en vente', 'Mise en vente'),
-        ('compromis signé', 'Compromis signé'),
-        ('signature de la vente', 'Signature de la vente'),
-    ]
-    
-    type_bien = models.CharField(max_length=50)
+    type_bien = models.CharField(max_length=50, db_index=True) # Ajout de l'index pour le type de bien pour améliorer les performances de recherche
     categorie = models.CharField(max_length=20, choices=CATEGORIES)
-    nb_pieces = models.IntegerField()
+    numero_voie = models.CharField(max_length=5)
+    type_voie = models.CharField(max_length=10, choices=TYPES)
+    nom_voie = models.CharField(max_length=50)
+    code_postal = models.IntegerField(db_index=True) # Ajout de l'index pour le code postal pour améliorer les performances de recherche
+    ville = models.CharField(max_length=20, db_index=True) # Ajout de l'index pour la ville pour améliorer les performances de recherche
+    commune = models.CharField(max_length=50, db_index=True) # Ajout de l'index pour la commune pour améliorer les performances de recherche
+    nb_pieces = models.IntegerField(db_index=True) # Ajout de l'index pour le nombre de pièces pour améliorer les performances de recherche
     superficie = models.IntegerField()
-    adresse = models.TextField()
-    ville = models.CharField(max_length=20)
-    date_disponibilite = models.DateField()
+    parking = models.BooleanField(default=False)
+    balcon = models.BooleanField(default=False)
+    ascenseur = models.BooleanField(default=False)
+    jardin = models.BooleanField(default=False)
+    piscine = models.BooleanField(default=False)
     prix = models.DecimalField(max_digits=13, decimal_places=2)
+    date_disponibilite = models.DateField()
     descriptions = models.TextField(blank=True, null=True)
     etat = models.CharField(max_length=30, choices=ETATS)
     image_url = models.URLField(blank=True, null=True)
 
+    def clean(self): 
+        # Vérifie que le prix et la superficie sont positifs
+        # Utilisé pour lever une exception si les conditions ne sont pas remplies
+        from django.core.exceptions import ValidationError
+        if self.prix <= 0:
+            raise ValidationError("Le prix doit être supérieur à 0.")
+        if self.superficie <= 0:
+            raise ValidationError("La superficie doit être supérieure à 0.")
+
     def __str__(self):
         # Format pour l'affichage
-        # Affiche le type de bien, la catégorie, la ville, le nombre de pièces, la superficie,
-        # l'adresse, la date de disponibilité, le prix, l'état et l'URL de l'image
-        # ou "Aucune image" si l'URL est vide
-        # ou "Aucune description" si la description est vide 
+        options = ', '.join([
+            opt for opt, val in {
+                'parking': self.parking,
+                'balcon': self.balcon,
+                'ascenseur': self.ascenseur,
+                'jardin': self.jardin,
+                'piscine': self.piscine
+            }.items() if val
+        ]) or "Aucune option"
+
         return (
             f"{self.type_bien.title()} en {self.categorie.title()} à {self.ville.title()} - "
             f"{self.nb_pieces} pièce(s), {self.superficie} m²\n"
-            f"Adresse : {self.adresse}\n"
-            f"Disponible à partir du {self.date_disponibilite.strftime('%d/%m/%Y')}\n"
-            f"Prix : {self.prix} €\n"
-            f"État : {self.etat.title()}\n"
-            f"Image : {self.image_url or 'Aucune image'}\n"
-            f"Description : {self.descriptions or 'Aucune description'}"
+            f"Adresse : {self.numero_voie} {self.type_voie} {self.nom_voie}, {self.code_postal} {self.ville}\n"
+            f"Disponible : {self.date_disponibilite.strftime('%d/%m/%Y')} | "
+            f"Prix : {self.prix} € | État : {self.etat.title()}\n"
+            f"Options : {options}"
         )
+
     def __repr__(self):
         return (
-            f"<BienImmobilier(type='{self.type_bien}', ville='{self.ville}', "
-            f"catégorie='{self.categorie}', surface={self.superficie}m², "
-            f"pièces={self.nb_pieces}, prix={self.prix}€, état='{self.etat}')>"
+            f"<BienImmobilier(type='{self.type_bien}', ville='{self.ville}', surface={self.superficie}m², "
+            f"pièces={self.nb_pieces}, prix={self.prix}€, balcon={self.balcon}, jardin={self.jardin}, "
+            f"piscine={self.piscine}, ascenseur={self.ascenseur}, parking={self.parking})>"
         )
 
 
@@ -109,15 +136,9 @@ class PortefeuilleVendeur(models.Model):
         )
 
 # Modèle pour les rendez-vous des vendeurs
-class RdvVendeur(models.Model):
-    OBJECTIFS = [
-        ('visite', 'Visite'),
-        ('évaluation', 'Évaluation'),
-        ('discussion', 'Discussion'),
-    ]
-    
+class RdvVendeur(models.Model):  
     portefeuille_vendeur = models.ForeignKey(PortefeuilleVendeur, on_delete=models.CASCADE)
-    object_rdv = models.CharField(max_length=30, choices=OBJECTIFS)
+    object_rdv = models.CharField(max_length=30, choices=OBJECTIFS_VENDEUR)
     date_rdv = models.DateField()
     commentaire = models.TextField(blank=True, null=True)
     
@@ -144,12 +165,20 @@ class Acheteur(models.Model):
     telephone = models.CharField(max_length=20, blank=True, null=True)
     
     class Meta:
-        unique_together = ('nom', 'prenom')
+        unique_together = ('nom', 'prenom', 'email')  # Empêche les doublons nom-prénom-email
+        ordering = ['nom', 'prenom']  # Tri par défaut sur le nom et prénom
     
+    def save(self, *args, validate=True, **kwargs):
+        self.email = self.email.lower()
+        if validate:
+            self.full_clean()
+        super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}"
     def __repr__(self):
-        return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}" 
+         return self.__str__()
+
 
 # Modèle de liaison entre agents et acheteurs
 class PortefeuilleAcheteur(models.Model):
@@ -173,60 +202,60 @@ class PortefeuilleAcheteur(models.Model):
 
 # Modèle pour les critères de recherche d'un acheteur
 class Criteres(models.Model):
-    acheteur = models.OneToOneField(Acheteur, on_delete=models.CASCADE)
+    acheteur = models.OneToOneField('Acheteur', on_delete=models.CASCADE)
     nb_pieces_min = models.IntegerField()
     nb_pieces_max = models.IntegerField(blank=True, null=True)
     superficie_min = models.IntegerField()
     superficie_max = models.IntegerField(blank=True, null=True)
     budget_max = models.DecimalField(max_digits=13, decimal_places=2)
-    garage = models.BooleanField(default=False)
+    parking = models.BooleanField(default=False)
     balcon = models.BooleanField(default=False)
     ascenseur = models.BooleanField(default=False)
     jardin = models.BooleanField(default=False)
-    ville = models.CharField(max_length=20)
+    piscine = models.BooleanField(default=False)
+    code_postal = models.IntegerField(db_index=True) # Ajout de l'index pour le code postal pour améliorer les performances de recherche
+    ville = models.CharField(max_length=20, db_index=True) # Ajout de l'index pour la ville pour améliorer les performances de recherche
+    commune = models.CharField(max_length=50, db_index=True) # Ajout de l'index pour la commune pour améliorer les performances de recherche
     date_emmenagement = models.DateField()
-    
+
     def correspondance(self, bien):
-    # Ex : retourner True si le bien correspond aux critères
+        # Vérifie si le bien correspond aux critères de l'acheteur
         return (
             self.nb_pieces_min <= bien.nb_pieces and
             (self.nb_pieces_max is None or bien.nb_pieces <= self.nb_pieces_max) and
             self.superficie_min <= bien.superficie and
             (self.superficie_max is None or bien.superficie <= self.superficie_max) and
-            bien.ville.lower() == self.ville.lower()
+            bien.code_postal == self.code_postal and
+            bien.ville.lower() == self.ville.lower() and
+            (not self.balcon or bien.balcon) and
+            (not self.jardin or bien.jardin) and
+            (not self.ascenseur or bien.ascenseur) and
+            (not self.piscine or bien.piscine) and
+            (not self.parking or bien.parking) and
+            bien.prix <= self.budget_max
         )
-        
+
     def __str__(self):
-        return (f"Critères de recherche pour {self.acheteur.nom} {self.acheteur.prenom} : "
-                f"{self.nb_pieces_min}-{self.nb_pieces_max} pièces, "
-                f"{self.superficie_min}-{self.superficie_max} m², "
-                f"Budget max : {self.budget_max} €, "
-                f"Ville : {self.ville}")
+        return (
+            f"Critères de {self.acheteur.nom} {self.acheteur.prenom} : "
+            f"{self.nb_pieces_min}-{self.nb_pieces_max or '?'} pièces, "
+            f"{self.superficie_min}-{self.superficie_max or '?'} m², "
+            f"max {self.budget_max} €, à {self.ville} ({self.code_postal})"
+        )
 
     def __repr__(self):
         return (
-            f"<Criteres(acheteur_id={self.acheteur_id}, "
-            f"nb_pieces_min={self.nb_pieces_min}, superficie_min={self.superficie_min}, "
-            f"budget_max={self.budget_max})>"
+            f"<Criteres(acheteur_id={self.acheteur_id}, pièces=[{self.nb_pieces_min}-{self.nb_pieces_max}], "
+            f"surface=[{self.superficie_min}-{self.superficie_max}], budget={self.budget_max}, "
+            f"ville={self.ville}, options=[balcon={self.balcon}, jardin={self.jardin}, "
+            f"ascenseur={self.ascenseur}, piscine={self.piscine}, parking={self.parking}])>"
         )
 
 
 # Modèle pour les rendez-vous avec les acheteurs
-class RdvAcheteur(models.Model):
-    OBJECTIFS = [
-        ('consultation', 'Consultation'),
-        ('visite', 'Visite'),
-        ('negociation', 'Négociation'),
-    ]
-    FEEDBACK_CHOICES = [
-        ('intéressé', 'Intéressé'),
-        ('pas intéressé', 'Pas intéressé'),
-        ('en attente', 'En attente'),
-        ('marché conclu', 'Marché conclu'),
-    ]
-    
+class RdvAcheteur(models.Model):   
     portefeuille_acheteur = models.ForeignKey(PortefeuilleAcheteur, on_delete=models.CASCADE)
-    object_rdv = models.CharField(max_length=30, choices=OBJECTIFS)
+    object_rdv = models.CharField(max_length=30, choices=OBJECTIFS_ACHETEUR)
     date_rdv = models.DateField()
     feedback = models.CharField(max_length=30, choices=FEEDBACK_CHOICES, blank=True, null=True)
 
@@ -246,16 +275,9 @@ class RdvAcheteur(models.Model):
     
 
 # Modèle pour suivre les étapes d'un achat immobilier
-class EtapesAchat(models.Model):
-    ETAPES = [
-        ('offre faite', 'Offre faite'),
-        ('négociation', 'Négociation'),
-        ('compromis signé', 'Compromis signé'),
-        ('vente finalisée', 'Vente finalisée'),
-    ]
-    
+class EtapesAchat(models.Model):  
     portefeuille_acheteur = models.ForeignKey(PortefeuilleAcheteur, on_delete=models.CASCADE)
-    etape = models.CharField(max_length=30, choices=ETAPES)
+    etape = models.CharField(max_length=30, choices=ETAPES_ACHAT)
     date_etape = models.DateField()
     
     def __str__(self):

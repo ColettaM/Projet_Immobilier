@@ -1,8 +1,8 @@
-Auteur: Coletta Moutsiha
-Date:27-Mars-2025
-###############################################################################
-			MODELE RELATIONNEL PROJET IMMO 
-###############################################################################
+--Auteur: Coletta Moutsiha
+--Date:27-Mars-2025
+--###############################################################################
+			--MODELE RELATIONNEL PROJET IMMO 
+--###############################################################################
 
 -- ========================
 -- TABLE DES AGENTS IMMOBILIERS
@@ -13,8 +13,8 @@ CREATE TABLE agent (
     prenom VARCHAR(50) NOT NULL,  -- Prénom de l'agent
     email VARCHAR(100) NOT NULL UNIQUE,  -- Email unique pour chaque agent
     telephone VARCHAR(20),  -- Numéro de téléphone de l'agent
-    CONSTRAINT unique_nom_prenom_agent UNIQUE (nom, prenom)  
-    -- Contrainte pour empêcher deux agents d'avoir le même nom et prénom
+    CONSTRAINT unique_nom_prenom_agent UNIQUE (nom, prenom, email)  
+    -- Contrainte pour empêcher deux agents d'avoir le même nom,prénom et email
 );
 
 -- ========================
@@ -26,8 +26,8 @@ CREATE TABLE vendeur (
     prenom VARCHAR(50) NOT NULL,  -- Prénom du vendeur
     email VARCHAR(100) NOT NULL UNIQUE,  -- Email unique pour chaque vendeur
     telephone VARCHAR(20),  -- Numéro de téléphone du vendeur
-    CONSTRAINT unique_nom_prenom UNIQUE (nom, prenom)  
-    -- Contrainte pour empêcher deux vendeurs d'avoir le même nom et prénom
+    CONSTRAINT unique_nom_prenom UNIQUE (nom, prenom, email)  
+    -- Contrainte pour empêcher deux vendeurs d'avoir le même nom,prénom et mail
     
 );
 
@@ -39,14 +39,28 @@ CREATE TABLE bien_immobilier (
     id_bien SERIAL PRIMARY KEY,  -- Identifiant unique du bien immobilier
     type_bien VARCHAR(50), -- Appartement, maison, terrain,
     categorie VARCHAR(10) NOT NULL CHECK (categorie IN ('vente','location', 'colocation', 'bureaux et commerce' )),
-    nb_pieces INTEGER NOT NULL,  -- Nombre de pieces dans le bien
-    superficie INTEGER NOT NULL,  -- Superficie en m²
-    adresse TEXT NOT NULL,  -- Adresse complète du bien
+    numero_voie VARCHAR(5) NOT NULL,  -- Numéro de la voie
+    type_voie VARCHAR(10) NOT NULL CHECK (
+        type_voie IN (
+            'rue', 'avenue', 'boulevard', 'chemin', 'impasse', 'place', 'route',
+            'allée', 'quai', 'cours', 'esplanade', 'promenade', 'passage', 'voie'
+        )
+    ),  -- Type de voie
+    nom_voie VARCHAR(50) NOT NULL,  --  Libellé de la voie
+    code_postal INTEGER NOT NULL,  -- Code postal de l'emplacement du bien
     ville VARCHAR(20) NOT NULL,  -- Ville ou se trouve le bien
-    date_disponibilite DATE NOT NULL,
+    commune VARCHAR(50) NOT NULL,  -- Commune ou se trouve le bien
+    nb_pieces INTEGER NOT NULL,  -- Nombre de pieces dans le bien
+    parking BOOLEAN DEFAULT FALSE, -- Indique si le bien dispose d'un parking
+    balcon BOOLEAN DEFAULT FALSE,  -- Indique si le bien dispose d'un balcon
+    ascenseur BOOLEAN DEFAULT FALSE,  -- Indique si le bien dispose d'un ascenseur
+    jardin BOOLEAN DEFAULT FALSE, -- Indique si le bien dispose d'un jardin
+    piscine BOOLEAN DEFAULT FALSE, -- Indique si le bien dispose d'une piscine
+    superficie INTEGER NOT NULL,  -- Superficie en m²
     prix DECIMAL NOT NULL,  -- Prix du bien immobilier
+    date_disponibilite DATE NOT NULL,
     descriptions TEXT,
-    etat VARCHAR(50) NOT NULL CHECK (etat IN ('prospection', 'estimation', 'mise en vente','compromis signé','signature de la vente')),  
+    etat VARCHAR(30) NOT NULL CHECK (etat IN ('prospection', 'estimation', 'mise en vente','compromis signé','signature de la vente')),  
     image_url TEXT -- Des liens vers des images du bien
     
 ); 
@@ -86,8 +100,8 @@ CREATE TABLE acheteur (
     prenom VARCHAR(50) NOT NULL,  -- Prénom de l'acheteur
     email VARCHAR(100) NOT NULL UNIQUE,  -- Email unique pour chaque acheteur
     telephone VARCHAR(20),  -- Numéro de téléphone de l'acheteur
-    CONSTRAINT unique_nom_prenom_acheteur UNIQUE (nom, prenom)  
-    -- Contrainte pour empêcher deux acheteurs d'avoir le même nom et prénom
+    CONSTRAINT unique_nom_prenom_acheteur UNIQUE (nom, prenom, email)  
+    -- Contrainte pour empêcher deux acheteurs d'avoir le même nom,prénom et adresse mail
 );
 
 -- ========================
@@ -113,13 +127,16 @@ CREATE TABLE criteres (
     nb_pieces_min INTEGER NOT NULL,  -- Nombre minimal de pieces souhaitées
     nb_pieces_max INTEGER ,  -- Nombre maximal de pieces souhaitées
     superficie_min INTEGER NOT NULL,  -- Superficie minimale souhaitée
-    superficie_max INTEGER ,  -- Superficie maximale souhaitée
+    superficie_max INTEGER,  -- Superficie maximale souhaitée
     budget_max DECIMAL NOT NULL,  -- Budget maximum de l'acheteur
-    garage BOOLEAN DEFAULT FALSE, 
+    parking BOOLEAN DEFAULT FALSE, 
     balcon BOOLEAN DEFAULT FALSE, 
     ascenseur BOOLEAN DEFAULT FALSE, 
-    jardin BOOLEAN DEFAULT FALSE;
-    ville VARCHAR(20) NOT NULL,  -- Ville préférée de l'acheteur
+    jardin BOOLEAN DEFAULT FALSE,                                              
+    piscine BOOLEAN DEFAULT FALSE,
+    code_postal INTEGER NOT NULL,  -- Code postal de la zone recherchée
+    ville VARCHAR(20) NOT NULL,  -- Ville préférée de l'acheteur  
+    commune VARCHAR(50) NOT NULL, -- Commune préférée de l'acheteur
     date_emmenagement DATE NOT NULL, -- Date d'emménagement souhaitée
     FOREIGN KEY (id_acheteur) REFERENCES acheteur(id_acheteur) ON DELETE CASCADE
 );
@@ -131,7 +148,7 @@ CREATE TABLE criteres (
 CREATE TABLE rdv_acheteur (
     id_rdv SERIAL PRIMARY KEY,   -- Identifiant unique du rendez-vous
     id_pa INTEGER NOT NULL REFERENCES portefeuille_acheteur(id_pa) ON DELETE CASCADE,
-    object_rdv VARCHAR(50) NOT NULL CHECK (object_rdv IN ('consultation', 'visite', 'negociation')),  -- Type de rendez-vous
+    object_rdv VARCHAR(30) NOT NULL CHECK (object_rdv IN ('consultation', 'visite', 'negociation')),  -- Type de rendez-vous
     date_rdv DATE NOT NULL,  -- Date du rendez-vous avec l'acheteur,
     feedback VARCHAR(20) CHECK (feedback IN ('intéressé', 'pas intéressé', 'en attente', 'marché conclu'))
 );
@@ -142,7 +159,7 @@ CREATE TABLE rdv_acheteur (
 CREATE TABLE etapes_achat (
     id_etape SERIAL PRIMARY KEY,
     id_pa INTEGER NOT NULL REFERENCES portefeuille_acheteur(id_pa) ON DELETE CASCADE,
-    etape VARCHAR(50) NOT NULL CHECK (etape IN ('offre faite', 'négociation', 'compromis signé', 'vente finalisée')),
+    etape VARCHAR(30) NOT NULL CHECK (etape IN ('offre faite', 'négociation', 'compromis signé', 'vente finalisée')),
     date_etape DATE NOT NULL
 );
 
