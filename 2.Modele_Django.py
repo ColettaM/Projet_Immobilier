@@ -1,15 +1,31 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from .choices import *
 
 # Create your models here.
 
+# Ce modèle contient les champs created_at et updated_at
+# qui sont automatiquement gérés par Django
+class TimeStampedModel(models.Model): 
+    #Modèle de base avec des champs de date et heure pour le suivi des enregistrements.
+    created_at = models.DateTimeField(auto_now_add=True)  # Date de création
+    updated_at = models.DateTimeField(auto_now=True)  # Date de mise à jour
+
+
+    class Meta:
+        abstract = True  # Ne crée pas une table pour cette classe
+
+
 # Modèle pour les agents immobiliers
-class Agent(models.Model):
+class Agent(TimeStampedModel):
     nom = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
     telephone = models.CharField(max_length=20, blank=True, null=True)
-
+    agence = models.CharField(max_length=50, db_index=True) # Ajout de l'index pour l'agence pour améliorer les performances de recherche
+    code_postal_agence = models.IntegerField(db_index=True) # Ajout de l'index pour le code postal de l'agence pour améliorer les performances de recherche
+    ville_agence = models.CharField(max_length=50, db_index=True) # Ajout de l'index pour la ville de l'agence pour améliorer les performances de recherche
+    
     class Meta:
         unique_together = ('nom', 'prenom', 'email') # Empêche les doublons nom-prénom-email
         ordering = ['nom', 'prenom']  # Tri par défaut sur le nom et prénom
@@ -17,74 +33,118 @@ class Agent(models.Model):
     def save(self, *args, validate=True, **kwargs):
         # Convertit l'email en minuscule avant de le sauvegarder
         # Cela permet d'éviter les doublons avec des majuscules/minuscules différentes
-        self.email = self.email.lower()  # Normalisation 
+        self.email = self.email.strip().lower() # Normalisation de l'email
         if validate:
             self.full_clean()  # Valide tous les champs + clean()
         super().save(*args, **kwargs)
         
     def __str__(self):
         # Format pour l'affichage
-        # Affiche le nom, prénom, email et téléphone de l'agent
-        return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}"
+        # Affiche les informations de l'agent
+        return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}, {self.agence}, {self.code_postal_agence}, {self.ville_agence}"
     def __repr__(self):
         # Format pour le debug
-        return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}"
+        return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}, {self.agence}, {self.code_postal_agence}, {self.ville_agence}"
 
 
 # Modèle pour les vendeurs
-class Vendeur(models.Model):
+class Vendeur(TimeStampedModel):
     nom = models.CharField(max_length=50)
     prenom = models.CharField(max_length=50)
     email = models.EmailField(unique=True)
     telephone = models.CharField(max_length=20, blank=True, null=True)
+    code_postal = models.IntegerField(blank=True, null=True)
+    ville = models.CharField(max_length=50,db_index=True)
     
     class Meta:
         unique_together = ('nom', 'prenom', 'email')
         ordering = ['nom', 'prenom']  
         
     def save(self, *args, validate=True, **kwargs):
-        self.email = self.email.lower()
+        self.email = self.email.strip().lower()
         if validate:
             self.full_clean()
         super().save(*args, **kwargs)
         
     def __str__(self):
-        return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}"
+        return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}, {self.code_postal}, {self.ville}"
     def __repr__(self):
         return self.__str__()
+
+
+# Modèle pour les acheteurs
+class Acheteur(TimeStampedModel):
+    nom = models.CharField(max_length=50)
+    prenom = models.CharField(max_length=50)
+    email = models.EmailField(unique=True)
+    telephone = models.CharField(max_length=20, blank=True, null=True)
+    code_postal = models.IntegerField(blank=True, null=True)
+    ville = models.CharField(max_length=50, db_index=True)
+    
+    class Meta:
+        unique_together = ('nom', 'prenom', 'email')  # Empêche les doublons nom-prénom-email
+        ordering = ['nom', 'prenom']  # Tri par défaut sur le nom et prénom
+    
+    def save(self, *args, validate=True, **kwargs):
+        self.email = self.email.strip().lower()
+        if validate:
+            self.full_clean()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}, {self.code_postal}, {self.ville}"
+    def __repr__(self):
+         return self.__str__()
+ 
     
     
 # Modèle pour les biens immobiliers
-class BienImmobilier(models.Model):
-    type_bien = models.CharField(max_length=50, db_index=True) # Ajout de l'index pour le type de bien pour améliorer les performances de recherche
-    categorie = models.CharField(max_length=20, choices=CATEGORIES)
+class BienImmobilier(TimeStampedModel):
+    type_bien = models.CharField(max_length=50, db_index=True) 
+    categorie = models.CharField(max_length=20, choices=CATEGORIES, db_index=True) 
     numero_voie = models.CharField(max_length=5)
-    type_voie = models.CharField(max_length=10, choices=TYPES)
+    type_voie = models.CharField(max_length=10)
     nom_voie = models.CharField(max_length=50)
-    code_postal = models.IntegerField(db_index=True) # Ajout de l'index pour le code postal pour améliorer les performances de recherche
-    ville = models.CharField(max_length=20, db_index=True) # Ajout de l'index pour la ville pour améliorer les performances de recherche
-    commune = models.CharField(max_length=50, db_index=True) # Ajout de l'index pour la commune pour améliorer les performances de recherche
-    nb_pieces = models.IntegerField(db_index=True) # Ajout de l'index pour le nombre de pièces pour améliorer les performances de recherche
+    code_postal = models.IntegerField(db_index=True) 
+    ville = models.CharField(max_length=50, db_index=True) 
+    nb_pieces = models.IntegerField(db_index=True) 
     superficie = models.IntegerField()
-    parking = models.BooleanField(default=False)
-    balcon = models.BooleanField(default=False)
-    ascenseur = models.BooleanField(default=False)
-    jardin = models.BooleanField(default=False)
-    piscine = models.BooleanField(default=False)
-    prix = models.DecimalField(max_digits=13, decimal_places=2)
+    parking = models.BooleanField(default=False, db_index=True) 
+    balcon = models.BooleanField(default=False, db_index=True)
+    ascenseur = models.BooleanField(default=False, db_index=True)
+    jardin = models.BooleanField(default=False, db_index=True)
+    piscine = models.BooleanField(default=False, db_index=True)
+    prix = models.DecimalField(max_digits=10, decimal_places=2, db_index=True) # Ajout de l'index pour le prix pour améliorer les performances de recherche
     date_disponibilite = models.DateField()
     descriptions = models.TextField(blank=True, null=True)
-    etat = models.CharField(max_length=30, choices=ETATS)
-    image_url = models.URLField(blank=True, null=True)
+    statut = models.CharField(max_length=20, choices=STATUTS_BIEN, default='disponible')
+    coordonnees_gps = models.CharField(max_length=50, db_index=True)  # Coordonnées GPS
+    #image_url = models.URLField(blank=True, null=True)
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=['ville', 'code_postal', 'prix']), # Index composite pour la recherche
+        ]
+        ordering = ['date_disponibilite']  # Tri par défaut sur la date de disponibilité
+
+    @property 
+    # Propriété pour obtenir le titre de l'annonce
+    # Utilisé pour afficher le titre de l'annonce
+    # dans les vues et les templates
+    def titre_annonce(self):
+        return f"{self.type_bien.title()} {self.nb_pieces}p à {self.ville.title()} - {self.prix} €"
+
 
     def clean(self): 
         # Vérifie que le prix et la superficie sont positifs
         # Utilisé pour lever une exception si les conditions ne sont pas remplies
-        from django.core.exceptions import ValidationError
         if self.prix <= 0:
             raise ValidationError("Le prix doit être supérieur à 0.")
         if self.superficie <= 0:
             raise ValidationError("La superficie doit être supérieure à 0.")
+        if self.nb_pieces < 0:
+            raise ValidationError("Le nombre de pièces ne peut pas être négatif.")
+
 
     def __str__(self):
         # Format pour l'affichage
@@ -103,7 +163,7 @@ class BienImmobilier(models.Model):
             f"{self.nb_pieces} pièce(s), {self.superficie} m²\n"
             f"Adresse : {self.numero_voie} {self.type_voie} {self.nom_voie}, {self.code_postal} {self.ville}\n"
             f"Disponible : {self.date_disponibilite.strftime('%d/%m/%Y')} | "
-            f"Prix : {self.prix} € | État : {self.etat.title()}\n"
+            f"Prix : {self.prix} € \n"
             f"Options : {options}"
         )
 
@@ -116,13 +176,10 @@ class BienImmobilier(models.Model):
 
 
 # Modèle de liaison entre agents et vendeurs
-class PortefeuilleVendeur(models.Model):
-    agent = models.ForeignKey(Agent, on_delete=models.CASCADE)
-    vendeur = models.ForeignKey(Vendeur, on_delete=models.CASCADE)
-    bien = models.ForeignKey(BienImmobilier, on_delete=models.CASCADE)
-    
-    class Meta:
-        unique_together = ('agent', 'vendeur', 'bien')  # Unicité de la relation
+class PortefeuilleVendeur(TimeStampedModel):
+    agent = models.ForeignKey(Agent, on_delete=models.CASCADE, db_index=True,related_name='portefeuilles_vendeurs')
+    vendeur = models.ForeignKey(Vendeur, on_delete=models.CASCADE, db_index=True, related_name='portefeuilles_vendeurs')
+    bien = models.OneToOneField(BienImmobilier, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_vendeur')
 
     def __str__(self):
         return (f"Agent : {self.agent.nom} {self.agent.prenom} - "
@@ -135,56 +192,12 @@ class PortefeuilleVendeur(models.Model):
             f"vendeur_id={self.vendeur_id}, bien_id={self.bien_id})>"
         )
 
-# Modèle pour les rendez-vous des vendeurs
-class RdvVendeur(models.Model):  
-    portefeuille_vendeur = models.ForeignKey(PortefeuilleVendeur, on_delete=models.CASCADE)
-    object_rdv = models.CharField(max_length=30, choices=OBJECTIFS_VENDEUR)
-    date_rdv = models.DateField()
-    commentaire = models.TextField(blank=True, null=True)
-    
-    def __str__(self):
-        return (
-            f"Rdv {self.get_object_rdv_display()} - {self.portefeuille_vendeur} "
-            f"le {self.date_rdv.strftime('%d/%m/%Y')}\n"
-            f"Commentaire : {self.commentaire or 'Aucun commentaire'}"
-        )
-
-    def __repr__(self):
-        return (
-            f"<RdvVendeur(objectif='{self.object_rdv}', "
-            f"date='{self.date_rdv}', portefeuille_vendeur_id={self.portefeuille_vendeur_id})>"
-        )
-
-
-
-# Modèle pour les acheteurs
-class Acheteur(models.Model):
-    nom = models.CharField(max_length=50)
-    prenom = models.CharField(max_length=50)
-    email = models.EmailField(unique=True)
-    telephone = models.CharField(max_length=20, blank=True, null=True)
-    
-    class Meta:
-        unique_together = ('nom', 'prenom', 'email')  # Empêche les doublons nom-prénom-email
-        ordering = ['nom', 'prenom']  # Tri par défaut sur le nom et prénom
-    
-    def save(self, *args, validate=True, **kwargs):
-        self.email = self.email.lower()
-        if validate:
-            self.full_clean()
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}"
-    def __repr__(self):
-         return self.__str__()
-
 
 # Modèle de liaison entre agents et acheteurs
-class PortefeuilleAcheteur(models.Model):
-    agent = models.ForeignKey(Agent, on_delete=models.CASCADE)
-    acheteur = models.ForeignKey(Acheteur, on_delete=models.CASCADE)
-    bien = models.ForeignKey(BienImmobilier, on_delete=models.CASCADE)
+class PortefeuilleAcheteur(TimeStampedModel):
+    agent = models.ForeignKey(Agent, on_delete=models.CASCADE, db_index=True, related_name='portefeuilles_acheteurs')
+    acheteur = models.ForeignKey(Acheteur, on_delete=models.CASCADE, db_index=True, related_name='portefeuilles_acheteurs')
+    bien = models.ForeignKey(BienImmobilier, on_delete=models.CASCADE, db_index=True, related_name='portefeuilles_acheteurs')
     
     class Meta:
         unique_together = ('agent', 'acheteur', 'bien')
@@ -200,22 +213,69 @@ class PortefeuilleAcheteur(models.Model):
         )
 
 
+
+# Modèle pour les suivis biens- vendeurs
+class SuiviBienVendeur(TimeStampedModel):  
+    portefeuille_vendeur = models.ForeignKey(PortefeuilleVendeur, on_delete=models.CASCADE, related_name='suivis_bien_vendeur')
+    canal = models.CharField(max_length=20, choices=CANAL_VENDEURS)
+    etat_bien = models.CharField(max_length=50, choices=ETAT_VENDEURS)
+    date_suivi = models.DateField(db_index=True)
+    commentaire = models.TextField(blank=True, null=True)
+
+    def __str__(self):
+        return (
+            f"Suivi via {self.get_canal_display()} - {self.portefeuille_vendeur} "
+            f"le {self.date_suivi.strftime('%d/%m/%Y')}\n"
+            f"État : {self.get_etat_bien_display()} | Commentaire : {self.commentaire or 'Aucun'}"
+        )
+
+    def __repr__(self):
+        return (
+            f"<SuiviBienVendeur(canal='{self.canal}', "
+            f"etat_bien='{self.etat_bien}', date='{self.date_suivi}', "
+            f"portefeuille_vendeur_id={self.portefeuille_vendeur_id})>"
+        )
+
+
+# Modèle pour les suivi-acheteurs
+class SuiviBienAcheteur(TimeStampedModel):   
+    portefeuille = models.ForeignKey(PortefeuilleAcheteur, on_delete=models.CASCADE, related_name='suivis_bien_acheteur')
+    canal = models.CharField(max_length=20, choices=CANAL_ACHETEURS)
+    etat_bien = models.CharField(max_length=30, choices=ETAT_ACHETEURS)
+    date_suivi = models.DateField(db_index=True)
+    feedback = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return (
+            f"Suivi via {self.get_canal_display()} - {self.portefeuille} "
+            f"le {self.date_suivi.strftime('%d/%m/%Y')}\n"
+            f"État : {self.get_etat_bien_display()} | Feedback : {self.feedback or 'Aucun'}"
+        )
+
+    def __repr__(self):
+        return (
+            f"<SuiviBienAcheteur(canal='{self.canal}', etat_bien='{self.etat_bien}', "
+            f"date_suivi='{self.date_suivi}', portefeuille_acheteur_id={self.portefeuille_id}, "
+            f"feedback='{self.feedback}')>"
+        )
+
+
+
 # Modèle pour les critères de recherche d'un acheteur
-class Criteres(models.Model):
+class Criteres(TimeStampedModel):
     acheteur = models.OneToOneField('Acheteur', on_delete=models.CASCADE)
     nb_pieces_min = models.IntegerField()
     nb_pieces_max = models.IntegerField(blank=True, null=True)
     superficie_min = models.IntegerField()
     superficie_max = models.IntegerField(blank=True, null=True)
-    budget_max = models.DecimalField(max_digits=13, decimal_places=2)
+    budget_max = models.DecimalField(max_digits=10, decimal_places=2)
     parking = models.BooleanField(default=False)
     balcon = models.BooleanField(default=False)
     ascenseur = models.BooleanField(default=False)
     jardin = models.BooleanField(default=False)
     piscine = models.BooleanField(default=False)
     code_postal = models.IntegerField(db_index=True) # Ajout de l'index pour le code postal pour améliorer les performances de recherche
-    ville = models.CharField(max_length=20, db_index=True) # Ajout de l'index pour la ville pour améliorer les performances de recherche
-    commune = models.CharField(max_length=50, db_index=True) # Ajout de l'index pour la commune pour améliorer les performances de recherche
+    ville = models.CharField(max_length=50, db_index=True) # Ajout de l'index pour la ville pour améliorer les performances de recherche
     date_emmenagement = models.DateField()
 
     def correspondance(self, bien):
@@ -251,45 +311,3 @@ class Criteres(models.Model):
             f"ascenseur={self.ascenseur}, piscine={self.piscine}, parking={self.parking}])>"
         )
 
-
-# Modèle pour les rendez-vous avec les acheteurs
-class RdvAcheteur(models.Model):   
-    portefeuille_acheteur = models.ForeignKey(PortefeuilleAcheteur, on_delete=models.CASCADE)
-    object_rdv = models.CharField(max_length=30, choices=OBJECTIFS_ACHETEUR)
-    date_rdv = models.DateField()
-    feedback = models.CharField(max_length=30, choices=FEEDBACK_CHOICES, blank=True, null=True)
-
-    def __str__(self):
-        return (
-            f"Rdv {self.get_object_rdv_display()} - {self.portefeuille_acheteur} "
-            f"le {self.date_rdv.strftime('%d/%m/%Y')}\n"
-            f"Feedback : {self.get_feedback_display() or 'Aucun feedback'}"
-        )
-
-    def __repr__(self):
-        return (
-            f"<RdvAcheteur(objectif='{self.object_rdv}', "
-            f"date='{self.date_rdv}', portefeuille_acheteur_id={self.portefeuille_acheteur_id}, "
-            f"feedback='{self.feedback}')>"
-        )
-    
-
-# Modèle pour suivre les étapes d'un achat immobilier
-class EtapesAchat(models.Model):  
-    portefeuille_acheteur = models.ForeignKey(PortefeuilleAcheteur, on_delete=models.CASCADE)
-    etape = models.CharField(max_length=30, choices=ETAPES_ACHAT)
-    date_etape = models.DateField()
-    
-    def __str__(self):
-        return (
-            f"Etape : {self.get_etape_display()} - {self.portefeuille_acheteur} "
-            f"le {self.date_etape.strftime('%d/%m/%Y')}"
-        )
-    def __repr__(self):
-        return (
-            f"<EtapesAchat(portefeuille_acheteur_id={self.portefeuille_acheteur_id}, "
-            f"etape='{self.etape}', date_etape='{self.date_etape}')>"
-        )
-       
-         
-         
