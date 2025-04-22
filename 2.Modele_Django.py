@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+#from django.contrib.gis.db import models as geomodels
 from .choices import *
 
 # Create your models here.
@@ -100,10 +101,10 @@ class Acheteur(TimeStampedModel):
     
 # Modèle pour les biens immobiliers
 class BienImmobilier(TimeStampedModel):
-    type_bien = models.CharField(max_length=50, db_index=True) 
-    categorie = models.CharField(max_length=20, choices=CATEGORIES, db_index=True) 
+    type_bien = models.CharField(max_length=50,choices=TYPES_BIEN, db_index=True) 
+    categorie = models.CharField(max_length=30, choices=CATEGORIES, db_index=True) 
     numero_voie = models.CharField(max_length=5)
-    type_voie = models.CharField(max_length=10)
+    type_voie = models.CharField(max_length=10, choices=TYPE_VOIE, db_index=True)
     nom_voie = models.CharField(max_length=50)
     code_postal = models.IntegerField(db_index=True) 
     ville = models.CharField(max_length=50, db_index=True) 
@@ -119,11 +120,11 @@ class BienImmobilier(TimeStampedModel):
     descriptions = models.TextField(blank=True, null=True)
     statut = models.CharField(max_length=20, choices=STATUTS_BIEN, default='disponible')
     coordonnees_gps = models.CharField(max_length=50, db_index=True)  # Coordonnées GPS
-    #image_url = models.URLField(blank=True, null=True)
     
-    class Meta:
-        indexes = [
-            models.Index(fields=['ville', 'code_postal', 'prix']), # Index composite pour la recherche
+    class Meta: 
+        # Index composite pour la recherche
+        indexes = [ 
+            models.Index(fields=['type_bien', 'nb_pieces', 'superficie','ville', 'code_postal', 'prix']),    
         ]
         ordering = ['date_disponibilite']  # Tri par défaut sur la date de disponibilité
 
@@ -179,7 +180,7 @@ class BienImmobilier(TimeStampedModel):
 class PortefeuilleVendeur(TimeStampedModel):
     agent = models.ForeignKey(Agent, on_delete=models.CASCADE, db_index=True,related_name='portefeuilles_vendeurs')
     vendeur = models.ForeignKey(Vendeur, on_delete=models.CASCADE, db_index=True, related_name='portefeuilles_vendeurs')
-    bien = models.OneToOneField(BienImmobilier, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_vendeur')
+    bien = models.OneToOneField(BienImmobilier, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_vendeur', unique=True )
 
     def __str__(self):
         return (f"Agent : {self.agent.nom} {self.agent.prenom} - "
@@ -188,8 +189,8 @@ class PortefeuilleVendeur(TimeStampedModel):
 
     def __repr__(self):
         return (
-            f"<PortefeuilleVendeur(agent_id={self.agent_id}, "
-            f"vendeur_id={self.vendeur_id}, bien_id={self.bien_id})>"
+            f"<PortefeuilleVendeur(id_agent={self.id_agent}, "
+            f"id_vendeur={self.id_vendeur}, id_bien={self.id_bien})>"
         )
 
 
@@ -206,12 +207,12 @@ class PortefeuilleAcheteur(TimeStampedModel):
         return (f"Agent : {self.agent.nom} {self.agent.prenom} - "
                 f"Acheteur : {self.acheteur.nom} {self.acheteur.prenom} - "
                 f"Bien : {self.bien.type_bien} à {self.bien.ville}")
+   
     def __repr__(self):
         return (
-            f"<PortefeuilleAcheteur(agent_id={self.agent_id}, "
-            f"acheteur_id={self.acheteur_id}, bien_id={self.bien_id})>"
+            f"<PortefeuilleAcheteur(id_agent={self.id_agent}, "
+            f"id_acheteur={self.id_acheteur}, id_bien={self.id_bien})>"
         )
-
 
 
 # Modèle pour les suivis biens- vendeurs
@@ -233,13 +234,13 @@ class SuiviBienVendeur(TimeStampedModel):
         return (
             f"<SuiviBienVendeur(canal='{self.canal}', "
             f"etat_bien='{self.etat_bien}', date='{self.date_suivi}', "
-            f"portefeuille_vendeur_id={self.portefeuille_vendeur_id})>"
+            f"id_portefeuille_vendeur={self.id_portefeuille_vendeur})>"
         )
 
 
 # Modèle pour les suivi-acheteurs
 class SuiviBienAcheteur(TimeStampedModel):   
-    portefeuille = models.ForeignKey(PortefeuilleAcheteur, on_delete=models.CASCADE, related_name='suivis_bien_acheteur')
+    portefeuille_acheteur = models.ForeignKey(PortefeuilleAcheteur, on_delete=models.CASCADE, related_name='suivis_bien_acheteur')
     canal = models.CharField(max_length=20, choices=CANAL_ACHETEURS)
     etat_bien = models.CharField(max_length=30, choices=ETAT_ACHETEURS)
     date_suivi = models.DateField(db_index=True)
@@ -247,7 +248,7 @@ class SuiviBienAcheteur(TimeStampedModel):
     
     def __str__(self):
         return (
-            f"Suivi via {self.get_canal_display()} - {self.portefeuille} "
+            f"Suivi via {self.get_canal_display()} - {self.portefeuille_acheteur} "
             f"le {self.date_suivi.strftime('%d/%m/%Y')}\n"
             f"État : {self.get_etat_bien_display()} | Feedback : {self.feedback or 'Aucun'}"
         )
@@ -255,7 +256,7 @@ class SuiviBienAcheteur(TimeStampedModel):
     def __repr__(self):
         return (
             f"<SuiviBienAcheteur(canal='{self.canal}', etat_bien='{self.etat_bien}', "
-            f"date_suivi='{self.date_suivi}', portefeuille_acheteur_id={self.portefeuille_id}, "
+            f"date_suivi='{self.date_suivi}', id_portefeuille_acheteur={self.id_portefeuille_acheteur}, "
             f"feedback='{self.feedback}')>"
         )
 
@@ -277,6 +278,13 @@ class Criteres(TimeStampedModel):
     code_postal = models.IntegerField(db_index=True) # Ajout de l'index pour le code postal pour améliorer les performances de recherche
     ville = models.CharField(max_length=50, db_index=True) # Ajout de l'index pour la ville pour améliorer les performances de recherche
     date_emmenagement = models.DateField()
+
+    def clean(self):
+        if self.nb_pieces_max is not None and self.nb_pieces_min > self.nb_pieces_max:
+            raise ValidationError("Le nombre de pièces minimum ne peut pas être supérieur au maximum.")
+        if self.superficie_max is not None and self.superficie_min > self.superficie_max:
+            raise ValidationError("La superficie minimum ne peut pas être supérieure au maximum.")
+        
 
     def correspondance(self, bien):
         # Vérifie si le bien correspond aux critères de l'acheteur
@@ -305,9 +313,10 @@ class Criteres(TimeStampedModel):
 
     def __repr__(self):
         return (
-            f"<Criteres(acheteur_id={self.acheteur_id}, pièces=[{self.nb_pieces_min}-{self.nb_pieces_max}], "
+            f"<Criteres(id_acheteur={self.id_acheteur}, pièces=[{self.nb_pieces_min}-{self.nb_pieces_max}], "
             f"surface=[{self.superficie_min}-{self.superficie_max}], budget={self.budget_max}, "
             f"ville={self.ville}, options=[balcon={self.balcon}, jardin={self.jardin}, "
             f"ascenseur={self.ascenseur}, piscine={self.piscine}, parking={self.parking}])>"
         )
-
+        
+#-- Fin du fichier 2.Modele_Django.py -

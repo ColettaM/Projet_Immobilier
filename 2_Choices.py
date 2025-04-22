@@ -1,10 +1,34 @@
 # MonAppli_Immo/choices.py
 
+TYPES_BIEN = [
+        ('maison', 'Maison'),
+        ('appartement', 'Appartement'),
+        ('bureau', 'Bureau'),
+        ('local_commercial', 'Local Commercial'),
+]
+
 CATEGORIES = [
         ('vente', 'Vente'),
         ('location', 'Location'),
-        ('bureaux et local commercial', 'Bureaux et Local Commercial'),
 ]
+
+TYPE_VOIE = [
+        ('rue', 'Rue'),
+        ('avenue', 'Avenue'),
+        ('boulevard', 'Boulevard'),
+        ('chemin', 'Chemin'),
+        ('impasse', 'Impasse'),
+        ('place', 'Place'),
+        ('allée', 'Allée'),
+        ('quai', 'Quai'),
+        ('route', 'Route'),
+        ('cours', 'Cours'),
+        ('esplanade', 'Esplanade'),
+        ('promenade', 'Promenade'),
+        ('parc', 'Parc'),
+        ('voie', 'Voie'),
+]
+        
 
 STATUTS_BIEN = [
     ('disponible', 'Disponible'),
