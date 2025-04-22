@@ -1,13 +1,13 @@
 Auteur: Coletta Moutsiha
-Date:03-Avril-2025
 ###############################################################################
 			PROJET RESEAU AGENCE IMMOBILIERE 
 ###############################################################################
-Prérequis : Avoir installer Django et PostgreSQL.
 
+			##########  Date:03-Avril-2025##########
 
-1. Creation du projet django et de l'application
+1/ Creation du projet django et de l'application
 __________________________________________________
+Prérequis : Avoir installer Django et PostgreSQL.
 
 J'ai créé un projet Django, "projet_Immobiler".
 Il faut configuré le projet pour Postgre, penser à modifier le fichier "settings.py" au besoin (extrait ci-dessous).
@@ -30,11 +30,33 @@ Ensuite j'ai crée une base de données et une application, "MonAppli_Immo" que 
 __________________________________________________
 
 J'ai ensuite crée les classes de notre modèle Django basé sur le schéma de mon modele relationnel. 
+J'ai modifié le modèle Django plusieurs fois pour qu'il soit moins redondant et 
+j'ai rajouté des __str__(pour l'utilisateur) et des __repr__(pour debuguer).
 
 
-*****LA PROCHAINE ETAPE EST LE PEUPLEUMENT DE LA BASE DE DONNEES.*******
+				########  Date:16-Avril-2025 ##########
+
+3/ PEUPLEMENT DE LA BASE DE DONNEES (AVEC PANDA)
+__________________________________________________
+
+D'abord, j'ai crée un fichier  creation_donnees.py pour généré des données "test" réalistes (Charger les villes + codes postaux + géopoints depuis le fichier de datagouv), avec Pandas et Faker, que j'ai enregistré dans des fichiers en formats csv.
+Pour l'instant j'ai donc des données pour des agents(10), vendeurs(15), acheteurs(15), et des biens immobiliers(15).
+Ensuite, j'ai crée un fichier peuplement.py pour peupler la base de données.
+PROBLEME:
+	  - Django valide les emails et ici, il rejette ceux contenant des caractères non valides (comme des lettres accentuées : é, è, etc.).
+	    Il faut donc Nettoyer/normaliser les emails avant l’import (par exemple : remplacer é par e, etc.) et Ajouter un filtre dans 
+	    mon script pour vérifier la validité des emails avec une regex.
 
 
+
+				##########   Date:22-Avril-2025  ##########
+
+J'ai crée toutes mes données, celle des tables suivibienvendeur, suivibienacheteur et critères , dépendent du peuplement des autres tables
+il faut donc d'abord faire un 1er peuplement, à la suite de ce peuplement crées les données de suivis et critères , et ensuite faire un 2eme peuplement.
+
+
+3/ Création de l’interface web 
+__________________________________________________
 
 
 
