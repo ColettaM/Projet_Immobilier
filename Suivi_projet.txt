@@ -58,7 +58,16 @@ il faut donc d'abord faire un 1er peuplement, à la suite de ce peuplement crée
 3/ Création de l’interface web 
 __________________________________________________
 
+Passer à la création de l’interface web (qui fonctionne selon le pattern MTV – Model-Template-View)
+	- Création des Vues : Les vues vont gérer la logique métier : quelles données afficher et comment les récupérer.
+	- Création des URLs (Routes) : dans le projet et dans l'application
+	- Création des Templates (HTML)
 
 
+🧑‍💼 Requêtes sur les agents et agences :
+
+1.**Attributs d'un agent(nom, prénom,email,telephone,agence) déterminé par son nom/prénom ou par son email**
+
+2.**Afficher le portefeuilles Agent**(code SQL)
 
 

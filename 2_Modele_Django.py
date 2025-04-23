@@ -91,6 +91,10 @@ class Acheteur(TimeStampedModel):
         if validate:
             self.full_clean()
         super().save(*args, **kwargs)
+        
+    def biens_proches(self): # Méthode pour obtenir les biens proches des criteres de l'acheteur
+        biens = BienImmobilier.objects.all()
+        return [bien for bien in biens if self.criteres.correspondance(bien)]
 
     def __str__(self):
         return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}, {self.code_postal}, {self.ville}"
@@ -120,6 +124,8 @@ class BienImmobilier(TimeStampedModel):
     descriptions = models.TextField(blank=True, null=True)
     statut = models.CharField(max_length=20, choices=STATUTS_BIEN, default='disponible')
     coordonnees_gps = models.CharField(max_length=50, db_index=True)  # Coordonnées GPS
+    #coordonnees_gps = geomodels.PointField(geography=True) 
+    #image_url = models.URLField(blank=True, null=True)
     
     class Meta: 
         # Index composite pour la recherche
@@ -129,12 +135,13 @@ class BienImmobilier(TimeStampedModel):
         ordering = ['date_disponibilite']  # Tri par défaut sur la date de disponibilité
 
     @property 
-    # Propriété pour obtenir le titre de l'annonce
+    # Propriété pour obtenir le titre de l'annonce et l'adresse
     # Utilisé pour afficher le titre de l'annonce
     # dans les vues et les templates
     def titre_annonce(self):
-        return f"{self.type_bien.title()} {self.nb_pieces}p à {self.ville.title()} - {self.prix} €"
-
+        return f"{self.type_bien.title()} - Bien {self.statut.title()} "
+    def adresse_annonce(self):
+        return f"{self.numero_voie} {self.type_voie} {self.nom_voie}, {self.code_postal} {self.ville}"
 
     def clean(self): 
         # Vérifie que le prix et la superficie sont positifs
@@ -178,9 +185,9 @@ class BienImmobilier(TimeStampedModel):
 
 # Modèle de liaison entre agents et vendeurs
 class PortefeuilleVendeur(TimeStampedModel):
-    agent = models.ForeignKey(Agent, on_delete=models.CASCADE, db_index=True,related_name='portefeuilles_vendeurs')
-    vendeur = models.ForeignKey(Vendeur, on_delete=models.CASCADE, db_index=True, related_name='portefeuilles_vendeurs')
-    bien = models.OneToOneField(BienImmobilier, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_vendeur', unique=True )
+    agent = models.ForeignKey(Agent, on_delete=models.CASCADE, db_index=True,related_name='portefeuille_vendeurs')
+    vendeur = models.ForeignKey(Vendeur, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_vendeurs')
+    bien = models.OneToOneField(BienImmobilier, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_vendeurs', unique=True )
 
     def __str__(self):
         return (f"Agent : {self.agent.nom} {self.agent.prenom} - "
@@ -189,16 +196,16 @@ class PortefeuilleVendeur(TimeStampedModel):
 
     def __repr__(self):
         return (
-            f"<PortefeuilleVendeur(id_agent={self.id_agent}, "
-            f"id_vendeur={self.id_vendeur}, id_bien={self.id_bien})>"
+            f"<PortefeuilleVendeur(agent_id={self.agent_id}, "
+            f"vendeur_id={self.vendeur_id}, bien_id={self.bien_id})>"
         )
 
 
 # Modèle de liaison entre agents et acheteurs
 class PortefeuilleAcheteur(TimeStampedModel):
-    agent = models.ForeignKey(Agent, on_delete=models.CASCADE, db_index=True, related_name='portefeuilles_acheteurs')
-    acheteur = models.ForeignKey(Acheteur, on_delete=models.CASCADE, db_index=True, related_name='portefeuilles_acheteurs')
-    bien = models.ForeignKey(BienImmobilier, on_delete=models.CASCADE, db_index=True, related_name='portefeuilles_acheteurs')
+    agent = models.ForeignKey(Agent, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_acheteurs')
+    acheteur = models.ForeignKey(Acheteur, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_acheteurs')
+    bien = models.ForeignKey(BienImmobilier, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_acheteurs')
     
     class Meta:
         unique_together = ('agent', 'acheteur', 'bien')
@@ -210,14 +217,14 @@ class PortefeuilleAcheteur(TimeStampedModel):
    
     def __repr__(self):
         return (
-            f"<PortefeuilleAcheteur(id_agent={self.id_agent}, "
-            f"id_acheteur={self.id_acheteur}, id_bien={self.id_bien})>"
+            f"<PortefeuilleAcheteur(agent_id={self.agent_id}, "
+            f"acheteur_id={self.acheteur_id}, bien_id={self.bien_id})>"
         )
 
 
 # Modèle pour les suivis biens- vendeurs
 class SuiviBienVendeur(TimeStampedModel):  
-    portefeuille_vendeur = models.ForeignKey(PortefeuilleVendeur, on_delete=models.CASCADE, related_name='suivis_bien_vendeur')
+    pv = models.ForeignKey(PortefeuilleVendeur, on_delete=models.CASCADE, related_name='suivi_bien_vendeurs')
     canal = models.CharField(max_length=20, choices=CANAL_VENDEURS)
     etat_bien = models.CharField(max_length=50, choices=ETAT_VENDEURS)
     date_suivi = models.DateField(db_index=True)
@@ -225,7 +232,7 @@ class SuiviBienVendeur(TimeStampedModel):
 
     def __str__(self):
         return (
-            f"Suivi via {self.get_canal_display()} - {self.portefeuille_vendeur} "
+            f"Suivi via {self.get_canal_display()} - {self.pv} "
             f"le {self.date_suivi.strftime('%d/%m/%Y')}\n"
             f"État : {self.get_etat_bien_display()} | Commentaire : {self.commentaire or 'Aucun'}"
         )
@@ -234,13 +241,13 @@ class SuiviBienVendeur(TimeStampedModel):
         return (
             f"<SuiviBienVendeur(canal='{self.canal}', "
             f"etat_bien='{self.etat_bien}', date='{self.date_suivi}', "
-            f"id_portefeuille_vendeur={self.id_portefeuille_vendeur})>"
+            f"pv_id={self.pv_id})>"
         )
 
 
 # Modèle pour les suivi-acheteurs
 class SuiviBienAcheteur(TimeStampedModel):   
-    portefeuille_acheteur = models.ForeignKey(PortefeuilleAcheteur, on_delete=models.CASCADE, related_name='suivis_bien_acheteur')
+    pa = models.ForeignKey(PortefeuilleAcheteur, on_delete=models.CASCADE, related_name='suivi_bien_acheteurs')
     canal = models.CharField(max_length=20, choices=CANAL_ACHETEURS)
     etat_bien = models.CharField(max_length=30, choices=ETAT_ACHETEURS)
     date_suivi = models.DateField(db_index=True)
@@ -248,7 +255,7 @@ class SuiviBienAcheteur(TimeStampedModel):
     
     def __str__(self):
         return (
-            f"Suivi via {self.get_canal_display()} - {self.portefeuille_acheteur} "
+            f"Suivi via {self.get_canal_display()} - {self.pa} "
             f"le {self.date_suivi.strftime('%d/%m/%Y')}\n"
             f"État : {self.get_etat_bien_display()} | Feedback : {self.feedback or 'Aucun'}"
         )
@@ -256,7 +263,7 @@ class SuiviBienAcheteur(TimeStampedModel):
     def __repr__(self):
         return (
             f"<SuiviBienAcheteur(canal='{self.canal}', etat_bien='{self.etat_bien}', "
-            f"date_suivi='{self.date_suivi}', id_portefeuille_acheteur={self.id_portefeuille_acheteur}, "
+            f"date_suivi='{self.date_suivi}', pa_id={self.pa_id}, "
             f"feedback='{self.feedback}')>"
         )
 
@@ -264,7 +271,7 @@ class SuiviBienAcheteur(TimeStampedModel):
 
 # Modèle pour les critères de recherche d'un acheteur
 class Criteres(TimeStampedModel):
-    acheteur = models.OneToOneField('Acheteur', on_delete=models.CASCADE)
+    acheteur = models.OneToOneField('Acheteur', on_delete=models.CASCADE, related_name='criteres')
     nb_pieces_min = models.IntegerField()
     nb_pieces_max = models.IntegerField(blank=True, null=True)
     superficie_min = models.IntegerField()
@@ -313,10 +320,10 @@ class Criteres(TimeStampedModel):
 
     def __repr__(self):
         return (
-            f"<Criteres(id_acheteur={self.id_acheteur}, pièces=[{self.nb_pieces_min}-{self.nb_pieces_max}], "
+            f"<Criteres(acheteur_id={self.acheteur_id}, pièces=[{self.nb_pieces_min}-{self.nb_pieces_max}], "
             f"surface=[{self.superficie_min}-{self.superficie_max}], budget={self.budget_max}, "
             f"ville={self.ville}, options=[balcon={self.balcon}, jardin={self.jardin}, "
             f"ascenseur={self.ascenseur}, piscine={self.piscine}, parking={self.parking}])>"
         )
-        
-#-- Fin du fichier 2.Modele_Django.py -
+
+#--Fin des modèles--#
