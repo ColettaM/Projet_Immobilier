@@ -203,9 +203,9 @@ def generer_portefeuilles_vendeurs():
         bien = biens[i]  # On prend le bien dans l'ordre de la liste
 
         portefeuilles.append({
-            "email_agent": agent_choisi["email"],
-            "email_vendeur": vendeur["email"],
-            "coordonnees_gps_bien": bien["coordonnees_gps"]
+            "agent.email": agent_choisi["email"],
+            "vendeur.email": vendeur["email"],
+            "bien.coordonnees_gps": bien["coordonnees_gps"]
         })
     return portefeuilles
 
@@ -217,9 +217,9 @@ def generer_portefeuilles_acheteurs():
         bien = random.choice(biens)
 
         portefeuilles.append({
-            "email_agent": agent_choisi["email"],
-            "email_acheteur": acheteur["email"],
-            "coordonnees_gps_bien": bien["coordonnees_gps"]
+            "agent.email": agent_choisi["email"],
+            "acheteur.email": acheteur["email"],
+            "bien.coordonnees_gps": bien["coordonnees_gps"]
         })
     return portefeuilles
  
@@ -239,12 +239,12 @@ print("✅ Fichiers 'portefeuille_acheteurs.csv' et 'portefeuille_vendeurs.csv' 
 """
 # ----------- Création de données fictives pour les suivis des biens vendeurs et acheteurs --------------------------------------------#
 
-def generer_suivi_bien_vendeur(portefeuilles_vendeur, nb=30):
+def generer_suivi_bien_vendeurs(portefeuille_vendeurs, nb=30): 
     suivis = []
     for _ in range(nb):
-        pv = random.choice(portefeuilles_vendeur)
+        pv= random.choice(portefeuille_vendeurs)
         suivis.append({
-            "id_pv": pv.id,  # 🔁 utilise le vrai id en base
+            "pv.id": pv.id,  # 🔁 utilise le vrai id en base
             "canal": random.choice([choice[0] for choice in CANAL_VENDEURS]),
             "etat_bien": random.choice([choice[0] for choice in ETAT_VENDEURS]),
             "date_suivi": datetime.now().date() - timedelta(days=random.randint(0, 60)),
@@ -252,12 +252,12 @@ def generer_suivi_bien_vendeur(portefeuilles_vendeur, nb=30):
         })
     return suivis
 
-def generer_suivi_bien_acheteur(portefeuilles_acheteur, nb=30):
+def generer_suivi_bien_acheteurs(portefeuille_acheteurs, nb=30):
     suivis = []
     for _ in range(nb):
-        pa = random.choice(portefeuilles_acheteur)
+        pa = random.choice(portefeuille_acheteurs)
         suivis.append({
-            "id_pa": pa.id,  # 🔁 utilise le vrai id en base
+            "pa.id": pa.id,  # 🔁 utilise le vrai id en base
             "canal": random.choice([choice[0] for choice in CANAL_ACHETEURS]),
             "etat_bien": random.choice([choice[0] for choice in ETAT_ACHETEURS]),
             "date_suivi": datetime.now().date() - timedelta(days=random.randint(0, 60)),
@@ -266,16 +266,16 @@ def generer_suivi_bien_acheteur(portefeuilles_acheteur, nb=30):
     return suivis
 
 portefeuilles_vendeurs = list(PortefeuilleVendeur.objects.all())
-suivis_vendeur = generer_suivi_bien_vendeur(portefeuilles_vendeurs)
+suivis_vendeur = generer_suivi_bien_vendeurs(portefeuilles_vendeurs)
 
 portefeuilles_acheteurs = list(PortefeuilleAcheteur.objects.all())
-suivis_acheteur = generer_suivi_bien_acheteur(portefeuilles_acheteurs)
+suivis_acheteur = generer_suivi_bien_acheteurs(portefeuilles_acheteurs)
 
 df_suivi_vendeur = pd.DataFrame(suivis_vendeur)
 df_suivi_acheteur = pd.DataFrame(suivis_acheteur)
-df_suivi_vendeur.to_csv("data/suivibien_vendeurs.csv", index=False, encoding='utf-8')
-df_suivi_acheteur.to_csv("data/suivibien_acheteurs.csv", index=False, encoding='utf-8')
-print("✅ Fichiers 'suivibien_vendeurs.csv' et 'suivibien_acheteurs.csv' générés avec succès.")
+df_suivi_vendeur.to_csv("data/suivi_bien_vendeurs.csv", index=False, encoding='utf-8')
+df_suivi_acheteur.to_csv("data/suivi_bien_acheteurs.csv", index=False, encoding='utf-8')
+print("✅ Fichiers 'suivi_bien_vendeurs.csv' et 'suivi_bien_acheteurs.csv' générés avec succès.")
 
 # ----------- Création de données fictives pour les critères de recherches --------------------------------------------#
 
@@ -291,7 +291,7 @@ def generer_criteres(acheteurs):
         ville_info = base.sample(1).iloc[0]
 
         criteres.append({
-            "id_acheteur": acheteur.id,  # 🔁 utilise le vrai id en base
+            "acheteur.id": acheteur.id,  # 🔁 utilise le vrai id en base
             "nb_pieces_min": nb_pieces_min,
             "nb_pieces_max": nb_pieces_max,
             "superficie_min": superficie_min,
@@ -314,3 +314,4 @@ df_criteres.to_csv("data/criteres.csv", index=False, encoding='utf-8')
 print("✅ Fichier 'criteres.csv' généré avec succès.")
 
 """
+# ---------------------FIN----------------------------------#

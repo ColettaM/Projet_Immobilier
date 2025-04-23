@@ -8,7 +8,7 @@
 -- TABLE DES AGENTS IMMOBILIERS
 -- ========================
 CREATE TABLE agent (
-    id_agent SERIAL PRIMARY KEY,  -- Identifiant unique de l'agent immobilier
+    agent_id SERIAL PRIMARY KEY,  -- Identifiant unique de l'agent immobilier
     nom VARCHAR(50) NOT NULL,  -- Nom de l'agent
     prenom VARCHAR(50) NOT NULL,  -- Prénom de l'agent
     email VARCHAR(100) NOT NULL UNIQUE,  -- Email unique pour chaque agent
@@ -24,7 +24,7 @@ CREATE TABLE agent (
 -- TABLE DES VENDEURS
 -- ========================
 CREATE TABLE vendeur (
-    id_vendeur SERIAL PRIMARY KEY,  -- Identifiant unique du vendeur
+    vendeur_id SERIAL PRIMARY KEY,  -- Identifiant unique du vendeur
     nom VARCHAR(50) NOT NULL,  -- Nom du vendeur
     prenom VARCHAR(50) NOT NULL,  -- Prénom du vendeur
     email VARCHAR(100) NOT NULL UNIQUE,  -- Email unique pour chaque vendeur
@@ -39,7 +39,7 @@ CREATE TABLE vendeur (
 -- TABLE DES ACHETEURS
 -- ========================
 CREATE TABLE acheteur (
-    id_acheteur SERIAL PRIMARY KEY,  -- Identifiant unique de l'acheteur
+    acheteur_id SERIAL PRIMARY KEY,  -- Identifiant unique de l'acheteur
     nom VARCHAR(50) NOT NULL,  -- Nom de l'acheteur
     prenom VARCHAR(50) NOT NULL,  -- Prénom de l'acheteur
     email VARCHAR(100) NOT NULL UNIQUE,  -- Email unique pour chaque acheteur
@@ -55,7 +55,7 @@ CREATE TABLE acheteur (
 -- TABLE DES BIENS IMMOBILIERS
 -- ========================
 CREATE TABLE bien_immobilier (
-    id_bien SERIAL PRIMARY KEY,  -- Identifiant unique du bien immobilier
+    bien_id SERIAL PRIMARY KEY,  -- Identifiant unique du bien immobilier
     type_bien VARCHAR(50), -- Appartement, maison, terrain,
     categorie VARCHAR(10) NOT NULL CHECK (categorie IN ('vente','location', 'bureaux et local commercial' )),
     numero_voie VARCHAR(5) NOT NULL,  -- Numéro de la voie
@@ -82,13 +82,13 @@ CREATE TABLE bien_immobilier (
 -- TABLE DE LIAISON ENTRE AGENTS ET VENDEURS
 -- ========================
 CREATE TABLE portefeuille_vendeur (
-    id_pv SERIAL PRIMARY KEY,
-    id_agent INTEGER NOT NULL,    -- Référence à l'agent
-    id_vendeur INTEGER NOT NULL,  -- Référence au vendeur
-    id_bien INTEGER NOT NULL UNIQUE,     -- Référence au bien 
-    FOREIGN KEY (id_agent) REFERENCES agent(id_agent) ON DELETE CASCADE,
-    FOREIGN KEY (id_vendeur) REFERENCES vendeur(id_vendeur) ON DELETE CASCADE,
-    FOREIGN KEY (id_bien) REFERENCES bien_immobilier(id_bien) ON DELETE CASCADE,
+    portefeuille_vendeur_id SERIAL PRIMARY KEY,
+    agent_id INTEGER NOT NULL,    -- Référence à l'agent
+    vendeur_id INTEGER NOT NULL,  -- Référence au vendeur
+    bien_id INTEGER NOT NULL UNIQUE,     -- Référence au bien 
+    FOREIGN KEY (agent_id) REFERENCES agent(agent_id) ON DELETE CASCADE,
+    FOREIGN KEY (vendeur_id) REFERENCES vendeur(vendeur_id) ON DELETE CASCADE,
+    FOREIGN KEY (bien_id) REFERENCES bien_immobilier(bien_id) ON DELETE CASCADE,
 );
 
 
@@ -96,14 +96,14 @@ CREATE TABLE portefeuille_vendeur (
 -- TABLE DE LIAISON ENTRE AGENTS ET ACHETEURS
 -- ========================
 CREATE TABLE portefeuille_acheteur (
-    id_pa SERIAL PRIMARY KEY,
-    id_agent INTEGER NOT NULL,  
-    id_acheteur INTEGER NOT NULL,  
-    id_bien INTEGER NOT NULL,    
-    FOREIGN KEY (id_agent) REFERENCES agent(id_agent) ON DELETE CASCADE,
-    FOREIGN KEY (id_acheteur) REFERENCES acheteur(id_acheteur) ON DELETE CASCADE,
-    FOREIGN KEY (id_bien) REFERENCES bien_immobilier(id_bien) ON DELETE CASCADE,
-    UNIQUE (id_agent, id_acheteur, id_bien) -- Garantie d'unicité de la relation
+    portefeuille_acheteur_id SERIAL PRIMARY KEY,
+    agent_id INTEGER NOT NULL,  
+    acheteur_id INTEGER NOT NULL,  
+    bien_id INTEGER NOT NULL,    
+    FOREIGN KEY (agent_id) REFERENCES agent(agent_id) ON DELETE CASCADE,
+    FOREIGN KEY (acheteur_id) REFERENCES vendeur(acheteur_id) ON DELETE CASCADE,
+    FOREIGN KEY (bien_id) REFERENCES bien_immobilier(bien_id) ON DELETE CASCADE,
+    UNIQUE (agent_id, acheteur_id, bien_id) -- Garantie d'unicité de la relation
 );
 
 
@@ -111,13 +111,13 @@ CREATE TABLE portefeuille_acheteur (
 -- TABLE DES SUIVIS BIENS-VENDEUR
 -- ================================
 CREATE TABLE suivi_bien_vendeur (
-    id_suivi SERIAL PRIMARY KEY,
-    id_pv INTEGER NOT NULL,
+    suivi_bien_vendeur_id SERIAL PRIMARY KEY,
+    pv_id INTEGER NOT NULL,
     canal VARCHAR(20) NOT NULL CHECK (canal IN ('rdv', 'email', 'appel', 'sms', 'autre')),
     etat_bien VARCHAR(30) NOT NULL CHECK (etat_bien IN ('prospection','estimation', 'signature du compromis', 'négociation', 'mise en vente', 'annulation', 'signature de la vente')),  --l'etat du bien
     date_suivi DATE NOT NULL, -- Date du rendez-vous
     commentaire TEXT, -- Notes 
-    FOREIGN KEY (id_pv) REFERENCES portefeuille_vendeur(id_pv) ON DELETE CASCADE
+    FOREIGN KEY (pv_id) REFERENCES portefeuille_vendeur(pv_id) ON DELETE CASCADE
 );
 
 
@@ -125,22 +125,22 @@ CREATE TABLE suivi_bien_vendeur (
 -- TABLE DES SUIVIS BIENS-ACHETEUR
 -- =============================
 CREATE TABLE suivi_bien_acheteur (
-    id_suivi SERIAL PRIMARY KEY,
-    id_pa INTEGER NOT NULL,
+    suivi_bien_acheteur_id SERIAL PRIMARY KEY,
+    pa_id INTEGER NOT NULL,
     canal VARCHAR(20) NOT NULL CHECK (canal IN ('rdv', 'email', 'appel', 'sms', 'autre')), -- Canal de retour
     etat_bien VARCHAR(30) NOT NULL CHECK (etat_bien IN ('communiqué', 'visité', 'refusé', 'offre faite', 'offre acceptée', 'signature du compromis', 'négocié', 'annulé', 'acte final signé')), -- Statut du bien
     date_suivi DATE NOT NULL , -- Date du suivi
     feedback TEXT,  -- Commentaires ou retours de l'acheteur sur le bien
-    FOREIGN KEY (id_pa) REFERENCES portefeuille_acheteur(id_pa) ON DELETE CASCADE
+    FOREIGN KEY (pa_id) REFERENCES portefeuille_acheteur(pa_id) ON DELETE CASCADE
 );
 
 
 -- ========================
 -- TABLE DES CRITÈRES DE RECHERCHE
 -- ========================
-CREATE TABLE criteres (
-    id_critere SERIAL PRIMARY KEY,  -- Identifiant unique des critères de recherche
-    id_acheteur INTEGER NOT NULL UNIQUE,  -- Chaque acheteur a un seul ensemble de critères
+CREATE TABLE critere (
+    critere_id SERIAL PRIMARY KEY,  -- Identifiant unique des critères de recherche
+    acheteur_id INTEGER NOT NULL UNIQUE,  -- Chaque acheteur a un seul ensemble de critères
     nb_pieces_min INTEGER NOT NULL,  -- Nombre minimal de pieces souhaitées
     nb_pieces_max INTEGER ,  -- Nombre maximal de pieces souhaitées
     superficie_min INTEGER NOT NULL,  -- Superficie minimale souhaitée
@@ -154,6 +154,6 @@ CREATE TABLE criteres (
     code_postal INTEGER NOT NULL,  -- Code postal de la zone recherchée
     ville VARCHAR(20) NOT NULL,  -- Ville préférée de l'acheteur  
     date_emmenagement DATE NOT NULL, -- Date d'emménagement souhaitée
-    FOREIGN KEY (id_acheteur) REFERENCES acheteur(id_acheteur) ON DELETE CASCADE
+    FOREIGN KEY (acheteur_id) REFERENCES acheteur(acheteur_id) ON DELETE CASCADE
 );
 

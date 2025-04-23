@@ -122,9 +122,9 @@ def importer_portefeuille_vendeurs(path="data/portefeuille_vendeurs.csv"):
     df = pd.read_csv(path, encoding='utf-8')
     for _, row in df.iterrows():
         try:
-            agent = Agent.objects.filter(email=normalize_email(row["email_agent"])).first()
-            vendeur = Vendeur.objects.filter(email=normalize_email(row["email_vendeur"])).first()
-            bien = BienImmobilier.objects.filter(coordonnees_gps=row["coordonnees_gps_bien"]).first()
+            agent = Agent.objects.filter(email=normalize_email(row["agent.email"])).first()
+            vendeur = Vendeur.objects.filter(email=normalize_email(row["vendeur.email"])).first()
+            bien = BienImmobilier.objects.filter(coordonnees_gps=row["bien.coordonnees_gps"]).first()
 
             if agent and vendeur and bien:
                 # Vérification uniquement sur le bien
@@ -139,9 +139,9 @@ def importer_portefeuille_acheteurs(path="data/portefeuille_acheteurs.csv"):
     df = pd.read_csv(path, encoding='utf-8')
     for _, row in df.iterrows():
         try:
-            agent = Agent.objects.filter(email=normalize_email(row["email_agent"])).first()
-            acheteur = Acheteur.objects.filter(email=normalize_email(row["email_acheteur"])).first()
-            bien = BienImmobilier.objects.filter(coordonnees_gps=row["coordonnees_gps_bien"]).first()
+            agent = Agent.objects.filter(email=normalize_email(row["agent.email"])).first()
+            acheteur = Acheteur.objects.filter(email=normalize_email(row["acheteur.email"])).first()
+            bien = BienImmobilier.objects.filter(coordonnees_gps=row["bien.coordonnees_gps"]).first()
 
             if agent and acheteur and bien:
                 if not PortefeuilleAcheteur.objects.filter(agent=agent, acheteur=acheteur, bien=bien).exists():
@@ -184,15 +184,15 @@ if __name__ == "__main__":
 
 #""" A LANCER EN DEUXIEME TEMPS """
 
-""" 
+"""
 # --- Importation des suivis et critères ---
-def importer_suivi_vendeurs(path="data/suivibien_vendeurs.csv"):
+def importer_suivi_vendeurs(path="data/suivi_bien_vendeurs.csv"):
     df = pd.read_csv(path, encoding='utf-8')
     for _, row in df.iterrows():
         try:
-            portefeuille = PortefeuilleVendeur.objects.get(pk=int(row["id_pv"]))
+            portefeuille_vendeur = PortefeuilleVendeur.objects.get(pk=int(row["pv.id"]))
             SuiviBienVendeur.objects.create(
-                portefeuille_vendeur=portefeuille, 
+                pv=portefeuille_vendeur, 
                 canal=row["canal"],
                 etat_bien=row["etat_bien"],
                 date_suivi=datetime.strptime(row["date_suivi"], "%Y-%m-%d").date(),
@@ -201,13 +201,13 @@ def importer_suivi_vendeurs(path="data/suivibien_vendeurs.csv"):
         except Exception as e:
             logger.error(f"Erreur suivi vendeur : {e} - ligne: {row.to_dict()}")
 
-def importer_suivi_acheteurs(path="data/suivibien_acheteurs.csv"):
+def importer_suivi_acheteurs(path="data/suivi_bien_acheteurs.csv"):
     df = pd.read_csv(path, encoding='utf-8')
     for _, row in df.iterrows():
         try:
-            portefeuille = PortefeuilleAcheteur.objects.get(pk=int(row["id_pa"]))
+            portefeuille_acheteur = PortefeuilleAcheteur.objects.get(pk=int(row["pa.id"]))
             SuiviBienAcheteur.objects.create(
-                portefeuille_acheteur=portefeuille,
+                pa=portefeuille_acheteur,
                 canal=row["canal"],
                 etat_bien=row["etat_bien"],
                 date_suivi=datetime.strptime(row["date_suivi"], "%Y-%m-%d").date(),
@@ -220,7 +220,7 @@ def importer_criteres(path="data/criteres.csv"):
     df = pd.read_csv(path, encoding='utf-8')
     for _, row in df.iterrows():
         try:
-            acheteur = Acheteur.objects.get(pk=int(row["id_acheteur"]))
+            acheteur = Acheteur.objects.get(pk=int(row["acheteur.id"]))
             Criteres.objects.create(
                 acheteur=acheteur,
                 nb_pieces_min=int(row["nb_pieces_min"]),
@@ -242,11 +242,11 @@ def importer_criteres(path="data/criteres.csv"):
 
 # --- Seconde Execution ---
 if __name__ == "__main__":
-    #logger.info("Importation des suivis vendeurs")
-    #importer_suivi_vendeurs()
+    logger.info("Importation des suivis vendeurs")
+    importer_suivi_vendeurs()
 
-    #logger.info("Importation des suivis acheteurs")
-    #importer_suivi_acheteurs()
+    logger.info("Importation des suivis acheteurs")
+    importer_suivi_acheteurs()
     
     logger.info("Importation des criteres")
     importer_criteres()
