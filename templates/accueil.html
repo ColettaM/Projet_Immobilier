@@ -4,13 +4,22 @@
     <meta charset="UTF-8">
     <title>Agence Immo</title>
     <link rel="stylesheet" href="https://cdn.simplecss.org/simple.css">
+  
 </head>
 <body>
     <header>
         <h1>Mon Application Immobilière</h1>
         <nav>
             <a href="{% url 'search_agent' %}">Nos agents</a>
+            <a href="{% url 'ajouter_agent' %}">Ajouter des agents</a>
             <a href="{% url 'portefeuille_agent' %}">Portefeuille agents</a>
+            <a href="{% url 'chiffre_affaires' %}">Chiffre d'affaire</a>
+            
+            <a href="{% url 'search_acheteur' %}">Nos acheteurs</a>
+           
+            <a href="{% url 'search_vendeur' %}">Nos vendeurs</a>
+            <a href="{% url 'ajouter_personne' %}">Ajouter des acheteurs/vendeurs</a>
+           
         </nav>
     </header>
     <main>
