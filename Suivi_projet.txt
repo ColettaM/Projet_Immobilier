@@ -71,7 +71,6 @@ Passer à la création de l’interface web (qui fonctionne selon le pattern MTV
 4.**Afficher le chiffre d'affaires par agence / par agent sur une période donnée(code SQL)**
 
 
-
 			##########   Date:28-Avril-2025  ##########
 
 🧑‍💼 Requêtes sur les acheteurs :
@@ -82,5 +81,11 @@ Passer à la création de l’interface web (qui fonctionne selon le pattern MTV
 🧑‍💼 Requêtes sur les vendeurs:
 1.**Attributs d'un vendeur (nom, prénom,email,telephone...) déterminé par son nom/prénom**
 2.** Ajouter un vendeur **
+
+
+			##########   Date:08-Mai-2025  ##########
+
+#2.**Afficher les criteres d'un acheteur**
+#3.** Creer ou modifier les criteres Acheteurs **
 
 
