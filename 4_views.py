@@ -47,7 +47,7 @@ def ajouter_agent(request):
 
     return render(request, 'MonAppli_Immo/ajouter_agent.html', {'form': form})
 
-#2.**Afficher le portefeuille Agent(les vendeurs, les acheteurs et les biens)**(code SQL)
+#3.**Afficher le portefeuille Agent(les vendeurs, les acheteurs et les biens)**(code SQL)
 def portefeuille_agent(request):
     query = request.GET.get('q', '')
     agents = Agent.objects.filter(Q(nom__icontains=query) | Q(prenom__icontains=query)) if query else []
@@ -101,7 +101,7 @@ def portefeuille_agent(request):
         'query': query
 })
 
-#3.**Afficher le chiffre d'affaires par agence / par agent sur une période donnée(code SQL)**
+#4.**Afficher le chiffre d'affaires par agence / par agent sur une période donnée(code SQL)**
 def chiffre_affaires(request):
     ca_agents = []
     ca_agences = []
@@ -182,6 +182,26 @@ def ajouter_personne(request):
 
 
 
+"""
+### **Requêtes pour les vendeurs**
+"""
+
+#1.**Attributs d'un vendeur (nom, prénom,email,telephone...) déterminé par son nom/prénom**
+def search_vendeur(request):
+    query = request.GET.get('q', '').strip()
+    if query:
+        vendeurs = Vendeur.objects.filter(
+            Q(nom__iexact=query) | Q(prenom__iexact=query)
+        )
+    else:
+        vendeurs = Vendeur.objects.all()
+        
+    return render(request, 'MonAppli_Immo/search_vendeur.html', {
+        'vendeurs': vendeurs,
+        'query': query,
+    })
+  
+
 
 """
 ### **Requêtes pour les acheteurs **
@@ -202,24 +222,34 @@ def search_acheteur(request):
         'query': query,
     })
 
-
-
-"""
-### **Requêtes pour les vendeurs**
-"""
-
-#1.**Attributs d'un vendeur (nom, prénom,email,telephone...) déterminé par son nom/prénom**
-def search_vendeur(request):
-    query = request.GET.get('q', '').strip()
-    if query:
-        vendeurs = Vendeur.objects.filter(
-            Q(nom__iexact=query) | Q(prenom__iexact=query)
-        )
-    else:
-        vendeurs = Vendeur.objects.all()
-        
-    return render(request, 'MonAppli_Immo/search_vendeur.html', {
-        'vendeurs': vendeurs,
-        'query': query,
+#2.**Afficher les criteres d'un acheteur**
+def afficher_criteres(request, acheteur_id):
+    acheteur = get_object_or_404(Acheteur, id=acheteur_id)
+    criteres = Criteres.objects.filter(acheteur=acheteur)
+    
+    return render(request, 'MonAppli_Immo/afficher_criteres.html', {
+        'acheteur': acheteur,
+        'criteres': criteres,
     })
-  
+
+#3.** Creer ou modifier les criteres Acheteurs **
+def creer_ou_modifier_criteres(request, acheteur_id):
+    acheteur = get_object_or_404(Acheteur, pk=acheteur_id)
+    
+    # On récupère les critères liés à l'acheteur s'ils existent
+    criteres, created = Criteres.objects.get_or_create(acheteur=acheteur)
+
+    if request.method == 'POST':
+        form = CriteresForm(request.POST, instance=criteres)
+        if form.is_valid():
+            crit = form.save(commit=False)
+            crit.acheteur = acheteur  # Assure que l'acheteur est bien assigné
+            crit.save()
+            return redirect('afficher_criteres', acheteur_id=acheteur.id)
+    else:
+        form = CriteresForm(instance=criteres)
+
+    return render(request, 'MonAppli_Immo/criteres_form.html', {
+        'form': form,
+        'acheteur': acheteur,
+    })
