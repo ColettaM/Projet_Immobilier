@@ -66,21 +66,21 @@ Passer à la création de l’interface web (qui fonctionne selon le pattern MTV
 
 🧑‍💼 Requêtes sur les agents et agences :
 1.**Attributs d'un agent(nom, prénom,email,telephone,agence) déterminé par son nom/prénom ou par son email**
-2.**Afficher le portefeuilles Agent(acheteurs, vendeurs, biens)**(code SQL)
+2.** Ajouter un agent**
+3.**Afficher le portefeuilles Agent(acheteurs, vendeurs, biens)**(code SQL)
+4.**Afficher le chiffre d'affaires par agence / par agent sur une période donnée(code SQL)**
 
 
 
 			##########   Date:28-Avril-2025  ##########
 
-
-3.**Afficher le chiffre d'affaires par agence / par agent sur une période donnée(code SQL)**
-
 🧑‍💼 Requêtes sur les acheteurs :
 1.**Attributs d'un acheteur (nom, prénom,email,telephone...) déterminé par son nom/prénom**
+2.** Ajouter un acheteur **
+
 
 🧑‍💼 Requêtes sur les vendeurs:
 1.**Attributs d'un vendeur (nom, prénom,email,telephone...) déterminé par son nom/prénom**
+2.** Ajouter un vendeur **
 
-🧑‍💼 Requêtes sur les vendeurs et les acheteurs:
-# ** Ajouter un acheteur/vendeur **
 
