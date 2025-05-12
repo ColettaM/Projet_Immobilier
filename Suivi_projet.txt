@@ -73,19 +73,25 @@ Passer à la création de l’interface web (qui fonctionne selon le pattern MTV
 
 			##########   Date:28-Avril-2025  ##########
 
-🧑‍💼 Requêtes sur les acheteurs :
-1.**Attributs d'un acheteur (nom, prénom,email,telephone...) déterminé par son nom/prénom**
-2.** Ajouter un acheteur **
-
-
 🧑‍💼 Requêtes sur les vendeurs:
 1.**Attributs d'un vendeur (nom, prénom,email,telephone...) déterminé par son nom/prénom**
 2.** Ajouter un vendeur **
+3.**Afficher les biens d'un vendeur **
 
 
 			##########   Date:08-Mai-2025  ##########
 
-#2.**Afficher les criteres d'un acheteur**
-#3.** Creer ou modifier les criteres Acheteurs **
+🧑‍💼 Requêtes sur les acheteurs :
+1.**Attributs d'un acheteur (nom, prénom,email,telephone...) déterminé par son nom/prénom**
+2.** Ajouter un acheteur **
+3.** Creer ou modifier les criteres Acheteurs **
+4.**Afficher les biens correspondant aux critères d'un acheteur(meme approximatif)
+
+
+			##########   Date:12-Mai-2025  ##########
+
+
+
+
 
 
