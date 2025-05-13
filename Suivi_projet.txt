@@ -90,6 +90,14 @@ Passer à la création de l’interface web (qui fonctionne selon le pattern MTV
 
 			##########   Date:12-Mai-2025  ##########
 
+J'ai eu pas mal de soucis avec mes données parce que je n'avais pas pris en compte certains facteurs comme le fait que le couple agent-bien de mon portefeuille vendeur devait etre le meme que celui de mon portefeuille acheteur, sinon je me retrouvais avec un meme bien gerer par plusieurs agent (pas tres coherent) ou que chaque vendeur devait etre affecter d'un minimum de un bien.
+
+4.**Afficher les etats des biens d'un vendeur **
+5.**Afficher les rdv avec le vendeur (code sql) ** ( a revoir)
+
+5.** Gérer les étapes d’achat d'un acheteur **
+
+
 
 
 
