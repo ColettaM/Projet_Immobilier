@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from decimal import Decimal
 #from django.contrib.gis.db import models as geomodels
 from .choices import *
 
@@ -107,7 +108,7 @@ class Acheteur(TimeStampedModel):
 class BienImmobilier(TimeStampedModel):
     type_bien = models.CharField(max_length=50,choices=TYPES_BIEN, db_index=True) 
     categorie = models.CharField(max_length=30, choices=CATEGORIES, db_index=True) 
-    numero_voie = models.CharField(max_length=5)
+    numero_voie = models.CharField(max_length=40, db_index=True)
     type_voie = models.CharField(max_length=10, choices=TYPE_VOIE, db_index=True)
     nom_voie = models.CharField(max_length=50)
     code_postal = models.IntegerField(db_index=True) 
@@ -133,7 +134,7 @@ class BienImmobilier(TimeStampedModel):
             models.Index(fields=['type_bien', 'nb_pieces', 'superficie','ville', 'code_postal', 'prix']),    
         ]
         ordering = ['date_disponibilite']  # Tri par défaut sur la date de disponibilité
-
+ 
     @property 
     # Propriété pour obtenir le titre de l'annonce et l'adresse
     # Utilisé pour afficher le titre de l'annonce
@@ -187,7 +188,7 @@ class BienImmobilier(TimeStampedModel):
 class PortefeuilleVendeur(TimeStampedModel):
     agent = models.ForeignKey(Agent, on_delete=models.CASCADE, db_index=True,related_name='portefeuille_vendeurs')
     vendeur = models.ForeignKey(Vendeur, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_vendeurs')
-    bien = models.OneToOneField(BienImmobilier, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_vendeurs', unique=True )
+    bien = models.OneToOneField(BienImmobilier, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_vendeurs', unique=True ) # Un vendeur peut avoir plusieurs biens, mais un bien ne peut être lié qu'à un seul vendeur
 
     def __str__(self):
         return (f"Agent : {self.agent.nom} {self.agent.prenom} - "
@@ -208,7 +209,7 @@ class PortefeuilleAcheteur(TimeStampedModel):
     bien = models.ForeignKey(BienImmobilier, on_delete=models.CASCADE, db_index=True, related_name='portefeuille_acheteurs')
     
     class Meta:
-        unique_together = ('agent', 'acheteur', 'bien')
+        unique_together = ('agent','acheteur','bien') # Un agent ne peut pas avoir deux fois le même acheteur pour le même bien
         
     def __str__(self):
         return (f"Agent : {self.agent.nom} {self.agent.prenom} - "
@@ -272,43 +273,103 @@ class SuiviBienAcheteur(TimeStampedModel):
 # Modèle pour les critères de recherche d'un acheteur
 class Criteres(TimeStampedModel):
     acheteur = models.OneToOneField('Acheteur', on_delete=models.CASCADE, related_name='criteres')
-    nb_pieces_min = models.IntegerField()
+    type_bien = models.CharField(default='Appartement', max_length=50,choices=TYPES_BIEN, db_index=True) 
+    categorie = models.CharField(default='Location',max_length=30, choices=CATEGORIES, db_index=True) 
+    nb_pieces_min = models.IntegerField(blank=True, null=True)
     nb_pieces_max = models.IntegerField(blank=True, null=True)
-    superficie_min = models.IntegerField()
+    superficie_min = models.IntegerField(blank=True, null=True)
     superficie_max = models.IntegerField(blank=True, null=True)
-    budget_max = models.DecimalField(max_digits=10, decimal_places=2)
-    parking = models.BooleanField(default=False)
-    balcon = models.BooleanField(default=False)
-    ascenseur = models.BooleanField(default=False)
-    jardin = models.BooleanField(default=False)
-    piscine = models.BooleanField(default=False)
-    code_postal = models.IntegerField(db_index=True) # Ajout de l'index pour le code postal pour améliorer les performances de recherche
-    ville = models.CharField(max_length=50, db_index=True) # Ajout de l'index pour la ville pour améliorer les performances de recherche
-    date_emmenagement = models.DateField()
+    budget_max = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    parking = models.BooleanField(default=False,blank=True, null=True )
+    balcon = models.BooleanField(default=False, blank=True, null=True)
+    ascenseur = models.BooleanField(default=False, blank=True, null=True)
+    jardin = models.BooleanField(default=False, blank=True, null=True)
+    piscine = models.BooleanField(default=False, blank=True, null=True)
+    code_postal = models.IntegerField(db_index=True, blank=True, null=True) # Ajout de l'index pour le code postal pour améliorer les performances de recherche
+    ville = models.CharField(max_length=50, db_index=True, blank=True, null=True) # Ajout de l'index pour la ville pour améliorer les performances de recherche
+    date_emmenagement = models.DateField(blank=True, null=True)
+
 
     def clean(self):
-        if self.nb_pieces_max is not None and self.nb_pieces_min > self.nb_pieces_max:
-            raise ValidationError("Le nombre de pièces minimum ne peut pas être supérieur au maximum.")
-        if self.superficie_max is not None and self.superficie_min > self.superficie_max:
-            raise ValidationError("La superficie minimum ne peut pas être supérieure au maximum.")
-        
+        # Vérifier les pièces
+        if self.nb_pieces_min is not None and self.nb_pieces_max is not None:
+            if self.nb_pieces_min > self.nb_pieces_max:
+                raise ValidationError("Le nombre de pièces minimum ne peut pas être supérieur au maximum.")
+
+        # Vérifier les superficies
+        if self.superficie_min is not None and self.superficie_max is not None:
+            if self.superficie_min > self.superficie_max:
+                raise ValidationError("La superficie minimum ne peut pas être supérieure au maximum.")
 
     def correspondance(self, bien):
-        # Vérifie si le bien correspond aux critères de l'acheteur
-        return (
-            self.nb_pieces_min <= bien.nb_pieces and
-            (self.nb_pieces_max is None or bien.nb_pieces <= self.nb_pieces_max) and
-            self.superficie_min <= bien.superficie and
-            (self.superficie_max is None or bien.superficie <= self.superficie_max) and
-            bien.code_postal == self.code_postal and
-            bien.ville.lower() == self.ville.lower() and
-            (not self.balcon or bien.balcon) and
-            (not self.jardin or bien.jardin) and
-            (not self.ascenseur or bien.ascenseur) and
-            (not self.piscine or bien.piscine) and
-            (not self.parking or bien.parking) and
-            bien.prix <= self.budget_max
-        )
+        print(f"Comparaison du type : {self.type_bien} vs {bien.type_bien}")  # DEBUG
+        
+        # Exclusion immédiate si le bien n'est pas disponible
+        if getattr(bien, 'statut', '').strip().lower() != 'disponible':
+            return False
+        
+        # Exclusion immédiate si le type de bien ne correspond pas
+        if self.type_bien and self.type_bien.strip().lower() != getattr(bien, 'type_bien', '').strip().lower():
+            return False
+        
+        # Vérification souple : on ne rejette pas immédiatement si un champ n'est pas rempli
+        score = 0
+        total = 0
+
+        # Pièces
+        if self.nb_pieces_min is not None:
+            total += 1
+            if bien.nb_pieces >= self.nb_pieces_min:
+                score += 1
+        if self.nb_pieces_max is not None:
+            total += 1
+            if bien.nb_pieces <= self.nb_pieces_max:
+                score += 1
+
+        # Superficie
+        if self.superficie_min is not None:
+            total += 1
+            if bien.superficie >= self.superficie_min:
+                score += 1
+        if self.superficie_max is not None:
+            total += 1
+            if bien.superficie <= self.superficie_max:
+                score += 1
+
+        # Budget
+        if self.budget_max is not None:
+            total += 1
+            if bien.prix <= self.budget_max:
+                score += 1
+
+        # Ville (tolérante sur code postal ou ville)
+        if self.ville:
+            total += 1
+            if self.ville.lower() in bien.ville.lower():
+                score += 1
+        elif self.code_postal:
+            total += 1
+            if str(bien.code_postal).startswith(str(self.code_postal)[0:2]):
+                score += 1
+
+        
+        # Catégorie
+        if self.categorie:
+            total += 1
+            if self.categorie.lower() in getattr(bien, 'categorie', '').lower():
+                score += 1
+        
+        # Options (optionnelles : on les compte seulement si demandées)
+        for option in ['parking', 'balcon', 'ascenseur', 'jardin', 'piscine']:
+            val = getattr(self, option)
+            if val:  # Si le critère exige cette option
+                total += 1
+                if getattr(bien, option, False):
+                    score += 1
+
+        # Score final : au moins 70% des critères doivent correspondre
+        return total == 0 or (score / total) >= 0.5
+
 
     def __str__(self):
         return (
