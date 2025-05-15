@@ -128,10 +128,12 @@ class BienImmobilier(TimeStampedModel):
         ]
         ordering = ['date_disponibilite']  # Tri par défaut sur la date de disponibilité
  
-    @property 
+    
     # Propriété pour obtenir le titre de l'annonce et l'adresse
+    @property 
     def titre_annonce(self):
         return f"{self.type_bien.title()} - Bien {self.statut.title()} "
+    @property
     def adresse_annonce(self):
         return f"{self.numero_voie} {self.type_voie} {self.nom_voie}, {self.code_postal} {self.ville}"
 
