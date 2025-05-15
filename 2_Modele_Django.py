@@ -1,7 +1,6 @@
 from django.db import models
 from django.core.exceptions import ValidationError
 from decimal import Decimal
-#from django.contrib.gis.db import models as geomodels
 from .choices import *
 
 # Create your models here.
@@ -93,10 +92,6 @@ class Acheteur(TimeStampedModel):
             self.full_clean()
         super().save(*args, **kwargs)
         
-    def biens_proches(self): # Méthode pour obtenir les biens proches des criteres de l'acheteur
-        biens = BienImmobilier.objects.all()
-        return [bien for bien in biens if self.criteres.correspondance(bien)]
-
     def __str__(self):
         return f"{self.nom} {self.prenom}, {self.email}, {self.telephone}, {self.code_postal}, {self.ville}"
     def __repr__(self):
@@ -125,20 +120,16 @@ class BienImmobilier(TimeStampedModel):
     descriptions = models.TextField(blank=True, null=True)
     statut = models.CharField(max_length=20, choices=STATUTS_BIEN, default='disponible')
     coordonnees_gps = models.CharField(max_length=50, db_index=True)  # Coordonnées GPS
-    #coordonnees_gps = geomodels.PointField(geography=True) 
-    #image_url = models.URLField(blank=True, null=True)
     
     class Meta: 
         # Index composite pour la recherche
         indexes = [ 
-            models.Index(fields=['type_bien', 'nb_pieces', 'superficie','ville', 'code_postal', 'prix']),    
+            models.Index(fields=['type_bien','categorie', 'nb_pieces', 'superficie','ville', 'code_postal', 'prix']),    
         ]
         ordering = ['date_disponibilite']  # Tri par défaut sur la date de disponibilité
  
     @property 
     # Propriété pour obtenir le titre de l'annonce et l'adresse
-    # Utilisé pour afficher le titre de l'annonce
-    # dans les vues et les templates
     def titre_annonce(self):
         return f"{self.type_bien.title()} - Bien {self.statut.title()} "
     def adresse_annonce(self):
@@ -300,6 +291,7 @@ class Criteres(TimeStampedModel):
         if self.superficie_min is not None and self.superficie_max is not None:
             if self.superficie_min > self.superficie_max:
                 raise ValidationError("La superficie minimum ne peut pas être supérieure au maximum.")
+
 
     def correspondance(self, bien):
         print(f"Comparaison du type : {self.type_bien} vs {bien.type_bien}")  # DEBUG
