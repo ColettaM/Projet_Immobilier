@@ -25,19 +25,16 @@ os.makedirs("data", exist_ok=True)
 random.seed(42)
 Faker.seed(42)
 
+
 # -------------------------------------------------------#
 """ Données """
 # Charger les villes + codes postaux + géopoints depuis le fichier de datagouv
 try:
-    base = pd.read_csv("data/base_code.csv", encoding="utf-8")
+    base = pd.read_csv("data/communes_nettoye.csv", encoding="utf-8")
 except FileNotFoundError:
-    print("❌ Le fichier 'base_code.csv' est introuvable. Vérifiez le chemin.")
+    print("❌ Le fichier 'communes_nettoye.csv' est introuvable. Vérifiez le chemin.")
     exit(1)
-# Nettoyage : On supprime les lignes où il n'y a pas de nom de commune, code postal ou géopoint
-base = base.dropna(subset=["nom_de_la_commune", "code_postal", "_geopoint"])
-# On supprime les doublons sur commune + code postal pour ne pas avoir trop de redondance
-base = base.drop_duplicates(subset=["nom_de_la_commune", "code_postal"])
-
+    
 
 # ----------- Création de données fictives pour les agents -------------------------------------------#
 
@@ -74,7 +71,7 @@ def generer_agents(nb=10):
 
         ville_info = base.sample(1).iloc[0]
         code_postal = int(ville_info["code_postal"])
-        ville = ville_info["nom_de_la_commune"]
+        ville = ville_info["nom_de_la_ville"]
 
         agents.append({
             "nom": nom,
@@ -120,7 +117,7 @@ def generer_personnes(nb=15):
 
         ville_info = base.sample(1).iloc[0]
         code_postal = int(ville_info["code_postal"])
-        ville = ville_info["nom_de_la_commune"]
+        ville = ville_info["nom_de_la_ville"]
 
         personnes.append({
             "nom": nom,
@@ -143,27 +140,28 @@ df_acheteurs.to_csv("data/acheteurs.csv", index=False, encoding='utf-8')
 df_vendeurs.to_csv("data/vendeurs.csv", index=False, encoding='utf-8')
 print("✅ Fichiers 'acheteurs.csv' et 'vendeurs.csv' générés avec succès.")
 
+
 # ----------- Création de données fictives pour les biens immobiliers --------------------------------------------#
 
 biens = []
 
-for _ in range(15):
-    ville_info = base.sample(1).iloc[0]
+for _ in range(20):
     type_bien = random.choice([choice[0] for choice in TYPES_BIEN])
     categorie = random.choice([choice[0] for choice in CATEGORIES])
     numero_voie = str(random.randint(1, 250))
     type_voie = random.choice([choice[0] for choice in TYPE_VOIE])
     nom_voie_complet = fake.street_name()
     nom_voie = " ".join(nom_voie_complet.split()[1:]) if len(nom_voie_complet.split()) > 1 else nom_voie_complet
+    ville_info = base.sample(1).iloc[0]
     code_postal = int(ville_info["code_postal"])
-    ville = ville_info["nom_de_la_commune"]
-    coordonnees_gps = ville_info["_geopoint"]
+    ville = ville_info["nom_de_la_ville"]
+    url_wikipedia = ville_info["url_wikipedia"]
     nb_pieces = random.randint(1, 10)
     superficie = random.randint(80, 500)
     prix = round(random.uniform(390, 1500000), 2)
     date_disponibilite = datetime.now().date() + timedelta(days=random.randint(30, 120))
     statut = random.choice([choice[0] for choice in STATUTS_BIEN])
-
+    
     bien = {
         "type_bien": type_bien,
         "categorie": categorie,
@@ -183,7 +181,7 @@ for _ in range(15):
         "date_disponibilite": date_disponibilite,
         "descriptions": fake.text(max_nb_chars=200),
         "statut": statut,
-        "coordonnees_gps": coordonnees_gps,
+        "url_wikipedia": ville_info["url_wikipedia"],
     }
 
     biens.append(bien)
@@ -193,48 +191,76 @@ df_biens = pd.DataFrame(biens)
 df_biens.to_csv("data/biens.csv", index=False, encoding="utf-8")
 print("✅ Fichier 'biens.csv' généré avec succès.")
 
+
 # ----------- Création de données fictives pour les portefeuilles vendeurs et acheteurs --------------------------------------------#
-
-def generer_portefeuilles_vendeurs():
+def generer_portefeuilles_vendeurs(biens, agents, vendeurs):
     portefeuilles = []
-    for i in range(len(biens)):
-        agent_choisi = random.choice(agents)
-        vendeur = random.choice(vendeurs)
-        bien = biens[i]  # On prend le bien dans l'ordre de la liste
 
+    # On vérifie qu'on a assez de biens
+    if len(biens) < len(vendeurs):
+        raise ValueError("Il faut au moins autant de biens que de vendeurs pour garantir qu'ils en aient un pour chaque vendeur.")
+
+    # Étape 1 : assigner un bien unique à chaque vendeur
+    biens_disponibles = biens.copy()
+    random.shuffle(biens_disponibles)
+
+    for vendeur, bien in zip(vendeurs, biens_disponibles):
+        agent_choisi = random.choice(agents)
         portefeuilles.append({
             "agent.email": agent_choisi["email"],
             "vendeur.email": vendeur["email"],
-            "bien.coordonnees_gps": bien["coordonnees_gps"]
+            "bien.url_wikipedia": bien["url_wikipedia"]
         })
-    return portefeuilles
 
-def generer_portefeuilles_acheteurs():
-    portefeuilles = []
-    for _ in range(len(biens)):
+    # Étape 2 : assigner les biens restants aléatoirement à n'importe quel vendeur
+    for bien in biens_disponibles[len(vendeurs):]:
         agent_choisi = random.choice(agents)
-        acheteur = random.choice(acheteurs)
-        bien = random.choice(biens)
-
+        vendeur = random.choice(vendeurs)
         portefeuilles.append({
             "agent.email": agent_choisi["email"],
-            "acheteur.email": acheteur["email"],
-            "bien.coordonnees_gps": bien["coordonnees_gps"]
+            "vendeur.email": vendeur["email"],
+            "bien.url_wikipedia": bien["url_wikipedia"]
         })
+
     return portefeuilles
- 
 
-portefeuilles_vendeurs = generer_portefeuilles_vendeurs()
-portefeuilles_acheteurs = generer_portefeuilles_acheteurs()
-
-df_portefeuille_acheteurs = pd.DataFrame(portefeuilles_acheteurs)
+portefeuilles_vendeurs = generer_portefeuilles_vendeurs(biens, agents, vendeurs)
 df_portefeuille_vendeurs = pd.DataFrame(portefeuilles_vendeurs)
-df_portefeuille_acheteurs.to_csv("data/portefeuille_acheteurs.csv", index=False, encoding='utf-8')
 df_portefeuille_vendeurs.to_csv("data/portefeuille_vendeurs.csv", index=False, encoding='utf-8')
-print("✅ Fichiers 'portefeuille_acheteurs.csv' et 'portefeuille_vendeurs.csv' générés avec succès.")
+print("✅ Fichier 'portefeuille_vendeurs.csv' généré avec succès.")
 
 
-#""" LANCER APRÈS AVOIR FAIT 1er PEUPLEMENT DE LA BASE DE DONNÉES """
+# ----------- Création de données fictives pour les portefeuilles acheteurs --------------------------------------------#
+
+def generer_portefeuilles_acheteurs(portefeuilles_vendeurs, acheteurs):
+    portefeuilles = []
+    
+    for pf_vendeur in portefeuilles_vendeurs:
+        agent_email = pf_vendeur["agent.email"]
+        bien_url = pf_vendeur["bien.url_wikipedia"]
+        
+        # Choisir un nombre aléatoire d'acheteurs (entre 1 et tous les acheteurs dispos)
+        nb_acheteurs = random.randint(1, len(acheteurs))
+        acheteurs_selectionnes = random.sample(acheteurs, nb_acheteurs)
+
+        for acheteur in acheteurs_selectionnes:
+            portefeuilles.append({
+                "agent.email": agent_email,
+                "acheteur.email": acheteur["email"],
+                "bien.url_wikipedia": bien_url
+            })
+
+    return portefeuilles
+
+portefeuilles_acheteurs = generer_portefeuilles_acheteurs(portefeuilles_vendeurs, acheteurs)
+df_portefeuille_acheteurs = pd.DataFrame(portefeuilles_acheteurs)
+df_portefeuille_acheteurs.to_csv("data/portefeuille_acheteurs.csv", index=False, encoding='utf-8')
+print("✅ Fichier 'portefeuille_acheteurs.csv' généré avec succès.")
+
+
+
+#------LANCER APRÈS AVOIR FAIT 2me PEUPLEMENT DE LA BASE DE DONNÉES-------#
+
 
 """
 # ----------- Création de données fictives pour les suivis des biens vendeurs et acheteurs --------------------------------------------#
@@ -279,10 +305,12 @@ print("✅ Fichiers 'suivi_bien_vendeurs.csv' et 'suivi_bien_acheteurs.csv' gén
 
 # ----------- Création de données fictives pour les critères de recherches --------------------------------------------#
 
-def generer_criteres(acheteurs):
+def generer_criteres():
     criteres = []
     acheteurs =Acheteur.objects.all()
     for acheteur in acheteurs :
+        type_bien = random.choice([choice[0] for choice in TYPES_BIEN])
+        categorie = random.choice([choice[0] for choice in CATEGORIES])
         nb_pieces_min = random.randint(1, 3)
         nb_pieces_max = random.randint(nb_pieces_min + 1, 10)
         superficie_min = random.randint(80, 150)
@@ -292,6 +320,8 @@ def generer_criteres(acheteurs):
 
         criteres.append({
             "acheteur.id": acheteur.id,  # 🔁 utilise le vrai id en base
+            "type_bien": type_bien,
+            "categorie": categorie,
             "nb_pieces_min": nb_pieces_min,
             "nb_pieces_max": nb_pieces_max,
             "superficie_min": superficie_min,
@@ -303,15 +333,17 @@ def generer_criteres(acheteurs):
             "jardin": bool(random.getrandbits(1)),
             "piscine": bool(random.getrandbits(1)),
             "code_postal": int(ville_info["code_postal"]),
-            "ville": ville_info["nom_de_la_commune"],
+            "ville": ville_info["nom_de_la_ville"],
             "date_emmenagement": datetime.now().date() + timedelta(days=random.randint(30, 120))
         })
-    return criteres
+    return criteres 
 
-criteres_acheteurs = generer_criteres(acheteurs)
+# On génère les critères pour chaque acheteur
+criteres_acheteurs = generer_criteres()
 df_criteres = pd.DataFrame(criteres_acheteurs)
 df_criteres.to_csv("data/criteres.csv", index=False, encoding='utf-8')
 print("✅ Fichier 'criteres.csv' généré avec succès.")
 
 """
+
 # ---------------------FIN----------------------------------#
