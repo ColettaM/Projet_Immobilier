@@ -1,0 +1,32 @@
+{% extends "MonAppli_Immo/accueil.html" %}
+
+{% block content %}
+<h2>Critères de recherche de {{ acheteur.prenom }} {{ acheteur.nom }}</h2>
+
+{% if criteres %}
+    <ul> 
+        {% for critere in criteres %}
+            <li><strong>Type de bien :</strong> {{ critere.type_bien }}</li>
+            <li><strong>Catégorie :</strong> {{ critere.categorie }}</li>
+            <li><strong>Nombre de pièces :</strong> {{ critere.nb_pieces_min }} - {{ critere.nb_pieces_max }}</li>
+            <li><strong>Superficie :</strong> {{ critere.superficie_min }} m² - {{ critere.superficie_max }} m²</li>
+            <li><strong>Budget maximal :</strong> {{ critere.budget_max|floatformat:2 }} €</li>
+            <li><strong>Parking :</strong> {{ critere.parking|yesno:"Oui,Non" }}</li>
+            <li><strong>Balcon :</strong> {{ critere.balcon|yesno:"Oui,Non" }}</li>
+            <li><strong>Ascenseur :</strong> {{ critere.ascenseur|yesno:"Oui,Non" }}</li>
+            <li><strong>Jardin :</strong> {{ critere.jardin|yesno:"Oui,Non" }}</li>
+            <li><strong>Piscine :</strong> {{ critere.piscine|yesno:"Oui,Non" }}</li>
+            <li><strong>Code postal :</strong> {{ critere.code_postal }}</li>
+            <li><strong>Ville :</strong> {{ critere.ville }}</li>
+            <li><strong>Date d'emménagement :</strong> {{ critere.date_emmenagement|date:"d/m/Y" }}</li>
+        {% endfor %}
+    </ul>
+    <a href="{% url 'criteres_form' acheteur.id %}">Modifier</a>
+{% else %}
+    <p>Aucun critère défini.</p>
+    <a href="{% url 'criteres_form' acheteur.id %}">Créer des critères</a>
+{% endif %}
+
+<br><br>
+<a href="{% url 'search_acheteur' %}">← Retour à la liste des acheteurs</a>
+{% endblock %}

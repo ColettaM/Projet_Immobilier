@@ -1,0 +1,31 @@
+type_bien,categorie,numero_voie,type_voie,nom_voie,code_postal,ville,nb_pieces,superficie,parking,balcon,ascenseur,jardin,piscine,prix,date_disponibilite,descriptions,statut,coordonnees_gps
+local commercial,vente,92,voie,de Carlier,1330,AMBERIEUX EN DOMBES,6,389,True,False,True,True,False,397068.14,2025-06-16,Phrase bande grandir soit confiance difficile envie. Envelopper réclamer feuille ramener savoir détacher avouer. Race arrivée un. Pendant renverser pénétrer rapidement tu.,loué,"45.99922935,4.9118718"
+maison,location,213,esplanade,Seguin,1300,ARBOYS EN BUGEY,10,265,False,True,False,True,False,866193.05,2025-09-09,"Vérité brûler ajouter énergie. Forêt prier avant posséder pareil bon.
+Révolution retirer moment appel marchand peuple aussitôt paysan. Service saint bras.",disponible,"45.71887355,5.640431749999999"
+maison,vente,222,avenue,Poirier,1500,AMBERIEU EN BUGEY,7,222,False,False,False,True,False,680328.62,2025-07-27,Souhaiter préférer double accuser troubler. Déposer frère mieux dépasser. Pays justice ressembler bête danser poste empire.,sous_offre,"45.9574707,5.37056825"
+maison,vente,137,promenade,Lambert,1100,APREMONT,4,163,False,True,False,True,True,693600.04,2025-07-15,"Éclat triste pas rang bonheur acte droite.
+Étaler verre détail situation calme aucun. Autrement parfois art cher moi emmener vouloir. Million gauche nouveau ouvrage.",retiré,"46.2045065,5.66189915"
+maison,vente,211,rue,Munoz,1100,ARBENT,6,285,True,True,False,False,True,401896.9,2025-07-08,"Autour déjà discours respect nombre rêver couche. Même paysan tel salut.
+Colon emporter quoi monter. Haut intention emmener franc donc.",retiré,"46.28381295,5.68792005"
+local commercial,location,227,esplanade,Xavier Lebrun,1300,ARBOYS EN BUGEY,8,153,True,False,True,True,False,397606.95,2025-07-12,"Épaule pourquoi durer trois. Année battre détail campagne relever soin salle.
+Impression article lune papa leur hésiter arrière.",retiré,"45.71887355,5.640431749999999"
+local commercial,location,57,boulevard,Lemaire,1190,ARBIGNY,9,332,False,True,False,True,True,136718.66,2025-06-17,"Toute éclairer près gauche joie interroger imaginer. Fille toi loi souffrance.
+Relever siècle établir représenter disposer. Droit égal noir.",disponible,"46.48084735,4.961327150000001"
+local commercial,vente,99,allée,de Costa,1330,AMBERIEUX EN DOMBES,10,319,True,True,False,True,True,793855.16,2025-08-20,"Lien nombre solitude songer.
+Maître immense profiter fuir. Avance renverser discussion papier. Pendant seul seulement silencieux fidèle engager.",disponible,"45.99922935,4.9118718"
+bureau,location,29,impasse,Laporte,1110,ARANC,7,160,True,False,True,True,False,680798.61,2025-07-14,Point condition complet ombre fil poitrine lettre. Charge impossible deux devant accrocher revoir table plutôt. Autrefois trois voile également.,retiré,"45.99714985,5.5140125"
+bureau,vente,40,place,de Renault,1100,ARBENT,3,356,True,False,False,False,False,1430267.76,2025-08-17,Réveiller danger content dessiner rapport regard point chaise. Taille pays en hauteur.,disponible,"46.28381295,5.68792005"
+bureau,location,62,rue,Sophie Delaunay,1350,ANGLEFORT,4,370,True,False,True,True,True,1420444.86,2025-06-21,"Mariage il plein plante neuf.
+Plonger intérieur ouvrir très. Terminer danser attitude saisir tellement elle. Capable après annoncer voyager campagne demain.",loué,"45.908577750000006,5.7947755"
+appartement,vente,169,quai,Devaux,1100,APREMONT,9,164,True,False,True,True,True,397871.57,2025-08-27,Fort content causer sept. Beaux crise passage vide arracher espace voisin. Course sauter mien ni rôle dehors remercier.,loué,"46.2045065,5.66189915"
+appartement,location,103,esplanade,de Hernandez,1300,ARBOYS EN BUGEY,6,304,False,False,False,False,False,1349460.28,2025-08-07,Atteindre jeter frais. Juste tellement autrefois avoir. Chemin celui paquet neuf prêter fier nu écraser.,disponible,"45.71887355,5.640431749999999"
+appartement,vente,2,avenue,Pereira,1230,ARGIS,1,197,False,True,False,False,True,101464.21,2025-06-15,Militaire ni mode épais. Fumée son traverser goût. Vert obéir étroit.,vendu,"45.93220895,5.481942999999999"
+local commercial,vente,139,boulevard,Descamps,1110,ARANC,10,375,False,False,False,True,False,709212.2,2025-08-10,Chanter partager amour queue. Fer ignorer ciel endroit entrée. Nouveau sourd chose rapidement armer avouer heure.,loué,"45.99714985,5.5140125"
+bureau,location,106,quai,Gilles Gillet,1400,L ABERGEMENT CLEMENCIAT,1,424,False,False,True,False,True,980318.38,2025-09-01,"Lèvre scène riche autre situation. Haine importer avec. Moyen mourir presque général camarade aide.
+Rêve ouvert savoir théâtre. Haïr bras habitude fou. Forcer encore établir escalier.",disponible,"46.1517018,4.9306005"
+maison,vente,50,chemin,Brunet,1400,L ABERGEMENT CLEMENCIAT,9,309,False,False,True,True,False,210608.77,2025-07-04,"Type parent inquiéter moins. Hors tomber mois partie par soi parcourir cheval.
+Hésiter éloigner dormir asseoir livre encore humide. Falloir dur pauvre ville.",vendu,"46.1517018,4.9306005"
+local commercial,vente,13,esplanade,Corinne Imbert,1300,ARBOYS EN BUGEY,9,87,False,False,False,False,True,1453506.48,2025-07-11,Désigner haut haut. Ombre facile terrible fixe remercier poésie arrivée.,sous_offre,"45.71887355,5.640431749999999"
+local commercial,vente,43,allée,Maurice Dos Santos,1330,AMBERIEUX EN DOMBES,1,279,False,True,True,True,True,398091.16,2025-08-08,Écrire réserver livrer matin. Apercevoir essayer réflexion certainement ferme clef sauver.,vendu,"45.99922935,4.9118718"
+local commercial,vente,49,impasse,François Mendès,1230,ARANDAS,4,109,True,False,False,False,True,868934.56,2025-08-19,"Droite recueillir donc tant. Sauvage beaux tempête rouge. Tout garder forêt faveur fine avouer.
+Énorme blond prévoir. Respect chambre dur sauter pousser champ.",disponible,"45.8885403,5.4981960999999995"

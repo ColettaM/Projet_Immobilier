@@ -1,0 +1,16 @@
+acheteur.id,type_bien,categorie,nb_pieces_min,nb_pieces_max,superficie_min,superficie_max,budget_max,parking,balcon,ascenseur,jardin,piscine,code_postal,ville,date_emmenagement
+125,appartement,vente,1,3,87,224,135173.7,False,True,False,False,True,1100,APREMONT,2025-07-11
+132,bureau,location,1,10,96,486,1871054.28,True,True,False,False,True,1300,AMBLEON,2025-08-10
+129,local commercial,vente,1,3,135,336,847387.81,False,True,True,False,True,1500,AMBUTRIX,2025-09-02
+135,maison,vente,2,8,93,240,383503.51,True,False,False,False,False,1640,L ABERGEMENT DE VAREY,2025-07-16
+126,local commercial,vente,1,9,150,220,101556.42,True,True,True,False,True,1400,L ABERGEMENT CLEMENCIAT,2025-06-22
+122,appartement,vente,2,10,141,270,1729354.93,True,False,False,False,False,1500,AMBERIEU EN BUGEY,2025-07-30
+123,bureau,location,2,9,142,241,380119.78,False,True,False,True,True,1100,APREMONT,2025-08-19
+130,maison,location,1,2,141,418,1838806.51,True,False,False,True,True,1400,L ABERGEMENT CLEMENCIAT,2025-06-21
+124,appartement,vente,3,4,110,336,240125.27,True,True,False,True,True,1400,L ABERGEMENT CLEMENCIAT,2025-06-16
+131,maison,location,3,8,146,327,1869438.63,False,True,True,False,False,1500,AMBRONAY,2025-07-14
+134,local commercial,vente,3,9,118,372,632627.92,True,True,False,False,False,1230,ARANDAS,2025-08-29
+133,maison,vente,3,5,144,299,265260.16,False,True,False,True,False,1100,APREMONT,2025-07-28
+128,bureau,vente,2,7,147,171,1335859.26,True,False,True,True,False,1300,AMBLEON,2025-06-28
+127,bureau,vente,1,10,99,258,563799.84,False,True,False,False,True,1100,ARBENT,2025-08-31
+136,bureau,location,2,3,91,435,847382.11,False,False,False,False,True,1100,ARBENT,2025-06-27

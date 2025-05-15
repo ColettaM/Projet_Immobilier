@@ -1,0 +1,13 @@
+{% extends "MonAppli_Immo/accueil.html" %}
+
+{% block content %}
+<h2>Modifier les critères de {{ acheteur.prenom }} {{ acheteur.nom }}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Enregistrer</button>
+</form>
+
+<a href="{% url 'afficher_criteres' acheteur.id %}">← Retour aux critères</a>
+{% endblock %}

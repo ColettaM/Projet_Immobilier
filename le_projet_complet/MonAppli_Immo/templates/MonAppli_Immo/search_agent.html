@@ -1,0 +1,47 @@
+{% extends "MonAppli_Immo/accueil.html" %}
+ 
+{% block content %}
+<h2>Recherche d'agents</h2>
+
+<form method="get" action="{% url 'search_agent' %}">
+    <input type="text" name="q" placeholder="Nom / Prénom / Email" value="{{ query }}">
+    <button type="submit">Rechercher</button>
+</form>
+
+<h2>Liste des Agents</h2>
+
+{% if agents %}
+<table>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Agence</th>
+            <th>Ville</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for agent in agents %}
+        <tr>
+            <td>
+                
+                <a href="{% url 'portefeuille_agent' agent.id %}">
+                    {{ agent.nom }}
+                </a>
+            </td>
+            <td>{{ agent.prenom }}</td>
+            <td>{{ agent.email }}</td>
+            <td>{{ agent.telephone }}</td>
+            <td>{{ agent.agence }}</td>
+            <td>{{ agent.ville_agence }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Aucun agent trouvé.</p>
+{% endif %}
+
+{% endblock %}
