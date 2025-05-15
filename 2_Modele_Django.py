@@ -119,7 +119,7 @@ class BienImmobilier(TimeStampedModel):
     date_disponibilite = models.DateField()
     descriptions = models.TextField(blank=True, null=True)
     statut = models.CharField(max_length=20, choices=STATUTS_BIEN, default='disponible')
-    coordonnees_gps = models.CharField(max_length=50, db_index=True)  # Coordonnées GPS
+    url_wikipedia = models.URLField(blank=True, null=True, max_length=200) # URL vers la page Wikipedia du bien
     
     class Meta: 
         # Index composite pour la recherche
