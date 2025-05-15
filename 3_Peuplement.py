@@ -93,7 +93,7 @@ def importer_biens(path='data/biens.csv'):
     df = pd.read_csv(path, encoding='utf-8')
     for _, row in df.iterrows():
         try:
-            if not BienImmobilier.objects.filter(coordonnees_gps=row["coordonnees_gps"]).exists():
+            if not BienImmobilier.objects.filter(url_wikipedia=row["url_wikipedia"]).exists():
                 BienImmobilier.objects.create(
                     type_bien=row["type_bien"],
                     categorie=row["categorie"],
@@ -113,7 +113,7 @@ def importer_biens(path='data/biens.csv'):
                     date_disponibilite=datetime.strptime(row["date_disponibilite"], "%Y-%m-%d").date(),
                     descriptions=row.get("descriptions", ""),
                     statut=row["statut"],
-                    coordonnees_gps=row["coordonnees_gps"]
+                    url_wikipedia=row["url_wikipedia"]
                 )
         except Exception as e:
             logger.error(f"Erreur bien immobilier : {e} - ligne: {row.to_dict()}")
@@ -124,7 +124,7 @@ def importer_portefeuille_vendeurs(path="data/portefeuille_vendeurs.csv"):
         try:
             agent = Agent.objects.filter(email=normalize_email(row["agent.email"])).first()
             vendeur = Vendeur.objects.filter(email=normalize_email(row["vendeur.email"])).first()
-            bien = BienImmobilier.objects.filter(coordonnees_gps=row["bien.coordonnees_gps"]).first()
+            bien = BienImmobilier.objects.filter(url_wikipedia=row["bien.url_wikipedia"]).first()
 
             if agent and vendeur and bien:
                 # Vérification uniquement sur le bien
@@ -141,7 +141,7 @@ def importer_portefeuille_acheteurs(path="data/portefeuille_acheteurs.csv"):
         try:
             agent = Agent.objects.filter(email=normalize_email(row["agent.email"])).first()
             acheteur = Acheteur.objects.filter(email=normalize_email(row["acheteur.email"])).first()
-            bien = BienImmobilier.objects.filter(coordonnees_gps=row["bien.coordonnees_gps"]).first()
+            bien = BienImmobilier.objects.filter(url_wikipedia=row["bien.url_wikipedia"]).first()
 
             if agent and acheteur and bien:
                 if not PortefeuilleAcheteur.objects.filter(agent=agent, acheteur=acheteur, bien=bien).exists():
@@ -155,10 +155,11 @@ def reset_base():
     for model in [SuiviBienAcheteur, SuiviBienVendeur, Criteres, PortefeuilleAcheteur, PortefeuilleVendeur, BienImmobilier, Acheteur, Vendeur, Agent]:
         model.objects.all().delete()
     logger.info("✅ Base réinitialisée.")
+
 """
 # --- Exécution principale ---
 if __name__ == "__main__":
-    # Décommenter pour réinitialiser
+    #Décommenter pour réinitialiser
     #reset_base()
     
     logger.info("Importation des agents")
@@ -175,14 +176,16 @@ if __name__ == "__main__":
 
     logger.info("Importation des portefeuilles vendeurs")
     importer_portefeuille_vendeurs()
-
+    
     logger.info("Importation des portefeuilles acheteurs")
     importer_portefeuille_acheteurs()
     
     logger.info("✅ Base de données peuplée avec succès Phase 1.")
+
 """
 
-#""" A LANCER EN DEUXIEME TEMPS """
+#*** A LANCER EN DEUXIEME TEMPS ***
+
 
 """
 # --- Importation des suivis et critères ---
@@ -223,6 +226,8 @@ def importer_criteres(path="data/criteres.csv"):
             acheteur = Acheteur.objects.get(pk=int(row["acheteur.id"]))
             Criteres.objects.create(
                 acheteur=acheteur,
+                type_bien=row["type_bien"],
+                categorie=row["categorie"],
                 nb_pieces_min=int(row["nb_pieces_min"]),
                 nb_pieces_max=int(row["nb_pieces_max"]),
                 superficie_min=int(row["superficie_min"]),
