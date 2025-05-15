@@ -296,20 +296,16 @@ class Criteres(TimeStampedModel):
 
 
     def correspondance(self, bien):
-        print(f"Comparaison du type : {self.type_bien} vs {bien.type_bien}")  # DEBUG
-        
+        #print(f"Comparaison du type : {self.type_bien} vs {bien.type_bien}")  # DEBUG
         # Exclusion immédiate si le bien n'est pas disponible
         if getattr(bien, 'statut', '').strip().lower() != 'disponible':
             return False
-        
         # Exclusion immédiate si le type de bien ne correspond pas
         if self.type_bien and self.type_bien.strip().lower() != getattr(bien, 'type_bien', '').strip().lower():
             return False
-        
         # Vérification souple : on ne rejette pas immédiatement si un champ n'est pas rempli
         score = 0
         total = 0
-
         # Pièces
         if self.nb_pieces_min is not None:
             total += 1
@@ -319,7 +315,6 @@ class Criteres(TimeStampedModel):
             total += 1
             if bien.nb_pieces <= self.nb_pieces_max:
                 score += 1
-
         # Superficie
         if self.superficie_min is not None:
             total += 1
@@ -329,13 +324,11 @@ class Criteres(TimeStampedModel):
             total += 1
             if bien.superficie <= self.superficie_max:
                 score += 1
-
         # Budget
         if self.budget_max is not None:
             total += 1
             if bien.prix <= self.budget_max:
                 score += 1
-
         # Ville (tolérante sur code postal ou ville)
         if self.ville:
             total += 1
@@ -345,14 +338,11 @@ class Criteres(TimeStampedModel):
             total += 1
             if str(bien.code_postal).startswith(str(self.code_postal)[0:2]):
                 score += 1
-
-        
         # Catégorie
         if self.categorie:
             total += 1
             if self.categorie.lower() in getattr(bien, 'categorie', '').lower():
                 score += 1
-        
         # Options (optionnelles : on les compte seulement si demandées)
         for option in ['parking', 'balcon', 'ascenseur', 'jardin', 'piscine']:
             val = getattr(self, option)
