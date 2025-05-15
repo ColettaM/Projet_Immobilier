@@ -56,8 +56,8 @@ CREATE TABLE acheteur (
 -- ========================
 CREATE TABLE bien_immobilier (
     bien_id SERIAL PRIMARY KEY,  -- Identifiant unique du bien immobilier
-    type_bien VARCHAR(50), -- Appartement, maison, terrain,
-    categorie VARCHAR(10) NOT NULL CHECK (categorie IN ('vente','location', 'bureaux et local commercial' )),
+    type_bien VARCHAR(50)NOT NULL CHECK (type_bien IN ( 'Appartement', 'maison', 'local commercial', 'bureau' )),
+    categorie VARCHAR(10) NOT NULL CHECK (categorie IN ('vente','location' )),
     numero_voie VARCHAR(5) NOT NULL,  -- Numéro de la voie
     type_voie VARCHAR(10) NOT NULL,  -- Type de voie (rue, avenue, impasse, etc.)
     nom_voie VARCHAR(50) NOT NULL,  --  Libellé de la voie
@@ -70,7 +70,7 @@ CREATE TABLE bien_immobilier (
     jardin BOOLEAN DEFAULT FALSE, -- Indique si le bien dispose d'un jardin
     piscine BOOLEAN DEFAULT FALSE, -- Indique si le bien dispose d'une piscine
     superficie INTEGER NOT NULL,  -- Superficie en m²
-    prix DECIMAL NOT NULL,  -- Prix du bien immobilier
+    prix DECIMAL(10, 2) NOT NULL,  -- Prix du bien immobilier
     date_disponibilite DATE NOT NULL,
     descriptions TEXT,
     statut VARCHAR(20) NOT NULL CHECK (statut IN ('disponible', 'sous offre', 'vendu', 'loué', 'retiré')), -- Statut du bien
@@ -101,7 +101,7 @@ CREATE TABLE portefeuille_acheteur (
     acheteur_id INTEGER NOT NULL,  
     bien_id INTEGER NOT NULL,    
     FOREIGN KEY (agent_id) REFERENCES agent(agent_id) ON DELETE CASCADE,
-    FOREIGN KEY (acheteur_id) REFERENCES vendeur(acheteur_id) ON DELETE CASCADE,
+    FOREIGN KEY (acheteur_id) REFERENCES acheteur(acheteur_id) ON DELETE CASCADE,
     FOREIGN KEY (bien_id) REFERENCES bien_immobilier(bien_id) ON DELETE CASCADE,
     UNIQUE (agent_id, acheteur_id, bien_id) -- Garantie d'unicité de la relation
 );
@@ -115,9 +115,9 @@ CREATE TABLE suivi_bien_vendeur (
     pv_id INTEGER NOT NULL,
     canal VARCHAR(20) NOT NULL CHECK (canal IN ('rdv', 'email', 'appel', 'sms', 'autre')),
     etat_bien VARCHAR(30) NOT NULL CHECK (etat_bien IN ('prospection','estimation', 'signature du compromis', 'négociation', 'mise en vente', 'annulation', 'signature de la vente')),  --l'etat du bien
-    date_suivi DATE NOT NULL, -- Date du rendez-vous
-    commentaire TEXT, -- Notes 
-    FOREIGN KEY (pv_id) REFERENCES portefeuille_vendeur(pv_id) ON DELETE CASCADE
+    date_suivi DATE NOT NULL, -- Date du suivi
+    commentaire TEXT, -- Commentaires ou retours de l'acheteur sur le bien
+    FOREIGN KEY (pv_id) REFERENCES portefeuille_vendeur(portefeuille_vendeur_id) ON DELETE CASCADE
 );
 
 
@@ -131,7 +131,7 @@ CREATE TABLE suivi_bien_acheteur (
     etat_bien VARCHAR(30) NOT NULL CHECK (etat_bien IN ('communiqué', 'visité', 'refusé', 'offre faite', 'offre acceptée', 'signature du compromis', 'négocié', 'annulé', 'acte final signé')), -- Statut du bien
     date_suivi DATE NOT NULL , -- Date du suivi
     feedback TEXT,  -- Commentaires ou retours de l'acheteur sur le bien
-    FOREIGN KEY (pa_id) REFERENCES portefeuille_acheteur(pa_id) ON DELETE CASCADE
+    FOREIGN KEY (pa_id) REFERENCES portefeuille_acheteur(portefeuille_acheteur_id) ON DELETE CASCADE
 );
 
 
@@ -141,6 +141,8 @@ CREATE TABLE suivi_bien_acheteur (
 CREATE TABLE critere (
     critere_id SERIAL PRIMARY KEY,  -- Identifiant unique des critères de recherche
     acheteur_id INTEGER NOT NULL UNIQUE,  -- Chaque acheteur a un seul ensemble de critères
+    type_bien VARCHAR(50) NOT NULL CHECK (type_bien IN ('Appartement', 'maison', 'local commercial', 'bureau')),  -- Type de bien recherché
+    categorie VARCHAR(10) NOT NULL CHECK (categorie IN ('vente', 'location')),  -- Catégorie de bien recherchée
     nb_pieces_min INTEGER NOT NULL,  -- Nombre minimal de pieces souhaitées
     nb_pieces_max INTEGER ,  -- Nombre maximal de pieces souhaitées
     superficie_min INTEGER NOT NULL,  -- Superficie minimale souhaitée
