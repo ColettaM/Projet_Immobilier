@@ -2,6 +2,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from decimal import Decimal
 from .choices import *
+from .utils import *
 
 # Create your models here.
 
@@ -119,6 +120,8 @@ class BienImmobilier(TimeStampedModel):
     date_disponibilite = models.DateField()
     descriptions = models.TextField(blank=True, null=True)
     statut = models.CharField(max_length=20, choices=STATUTS_BIEN, default='disponible')
+    latitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True) # Latitude pour la géolocalisation
+    longitude = models.DecimalField(max_digits=9, decimal_places=6, blank=True, null=True) # Longitude pour la géolocalisation
     url_wikipedia = models.URLField(blank=True, null=True, max_length=200) # URL vers la page Wikipedia du bien
     
     class Meta: 
@@ -127,15 +130,17 @@ class BienImmobilier(TimeStampedModel):
             models.Index(fields=['type_bien','categorie', 'nb_pieces', 'superficie','ville', 'code_postal', 'prix']),    
         ]
         ordering = ['date_disponibilite']  # Tri par défaut sur la date de disponibilité
- 
     
-    # Propriété pour obtenir le titre de l'annonce et l'adresse
+    
+    # Ces propriétés sont utilisées pour afficher le titre et l'adresse du bien
     @property 
     def titre_annonce(self):
         return f"{self.type_bien.title()} - Bien {self.statut.title()} "
-    @property
+    @property 
     def adresse_annonce(self):
         return f"{self.numero_voie} {self.type_voie} {self.nom_voie}, {self.code_postal} {self.ville}"
+    
+     
 
     def clean(self): 
         # Vérifie que le prix et la superficie sont positifs
@@ -262,7 +267,6 @@ class SuiviBienAcheteur(TimeStampedModel):
         )
 
 
-
 # Modèle pour les critères de recherche d'un acheteur
 class Criteres(TimeStampedModel):
     acheteur = models.OneToOneField('Acheteur', on_delete=models.CASCADE, related_name='criteres')
@@ -295,17 +299,21 @@ class Criteres(TimeStampedModel):
                 raise ValidationError("La superficie minimum ne peut pas être supérieure au maximum.")
 
 
-    def correspondance(self, bien):
-        #print(f"Comparaison du type : {self.type_bien} vs {bien.type_bien}")  # DEBUG
+    def correspondance(self, bien, rayon_km=9):
+        print(f"Comparaison du type : {self.type_bien} vs {bien.type_bien}")  # DEBUG
+        
         # Exclusion immédiate si le bien n'est pas disponible
         if getattr(bien, 'statut', '').strip().lower() != 'disponible':
             return False
+        
         # Exclusion immédiate si le type de bien ne correspond pas
         if self.type_bien and self.type_bien.strip().lower() != getattr(bien, 'type_bien', '').strip().lower():
             return False
+        
         # Vérification souple : on ne rejette pas immédiatement si un champ n'est pas rempli
         score = 0
         total = 0
+
         # Pièces
         if self.nb_pieces_min is not None:
             total += 1
@@ -315,6 +323,7 @@ class Criteres(TimeStampedModel):
             total += 1
             if bien.nb_pieces <= self.nb_pieces_max:
                 score += 1
+
         # Superficie
         if self.superficie_min is not None:
             total += 1
@@ -324,25 +333,29 @@ class Criteres(TimeStampedModel):
             total += 1
             if bien.superficie <= self.superficie_max:
                 score += 1
+
         # Budget
         if self.budget_max is not None:
             total += 1
             if bien.prix <= self.budget_max:
                 score += 1
-        # Ville (tolérante sur code postal ou ville)
-        if self.ville:
-            total += 1
-            if self.ville.lower() in bien.ville.lower():
-                score += 1
-        elif self.code_postal:
-            total += 1
-            if str(bien.code_postal).startswith(str(self.code_postal)[0:2]):
-                score += 1
+
+        # Ville/code postal → recherche géographique par rayon
+        # Filtre strict sur la distance avant toute autre évaluation
+        if self.ville or self.code_postal:
+            ref_lat, ref_lon = get_reference_coordinates(self.ville, self.code_postal)
+            if ref_lat is None or ref_lon is None or bien.latitude is None or bien.longitude is None:
+                return False  # Données manquantes = rejet
+            distance = haversine(float(ref_lat), float(ref_lon), float(bien.latitude), float(bien.longitude))
+            if distance > rayon_km:
+                return False  # Trop éloigné = rejet immédiat
+        
         # Catégorie
         if self.categorie:
             total += 1
             if self.categorie.lower() in getattr(bien, 'categorie', '').lower():
                 score += 1
+        
         # Options (optionnelles : on les compte seulement si demandées)
         for option in ['parking', 'balcon', 'ascenseur', 'jardin', 'piscine']:
             val = getattr(self, option)
@@ -351,7 +364,7 @@ class Criteres(TimeStampedModel):
                 if getattr(bien, option, False):
                     score += 1
 
-        # Score final : au moins 70% des critères doivent correspondre
+        # Score final : au moins 50% des critères doivent correspondre
         return total == 0 or (score / total) >= 0.5
 
 

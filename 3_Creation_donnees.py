@@ -155,12 +155,14 @@ for _ in range(20):
     ville_info = base.sample(1).iloc[0]
     code_postal = int(ville_info["code_postal"])
     ville = ville_info["nom_de_la_ville"]
-    url_wikipedia = ville_info["url_wikipedia"]
     nb_pieces = random.randint(1, 10)
     superficie = random.randint(80, 500)
     prix = round(random.uniform(390, 1500000), 2)
     date_disponibilite = datetime.now().date() + timedelta(days=random.randint(30, 120))
     statut = random.choice([choice[0] for choice in STATUTS_BIEN])
+    latitude = float(ville_info["latitude"])
+    longitude = float(ville_info["longitude"])
+    url_wikipedia = ville_info["url_wikipedia"]
     
     bien = {
         "type_bien": type_bien,
@@ -181,7 +183,9 @@ for _ in range(20):
         "date_disponibilite": date_disponibilite,
         "descriptions": fake.text(max_nb_chars=200),
         "statut": statut,
-        "url_wikipedia": ville_info["url_wikipedia"],
+        "latitude": latitude,
+        "longitude": longitude,
+        "url_wikipedia": url_wikipedia
     }
 
     biens.append(bien)
@@ -200,10 +204,10 @@ def generer_portefeuilles_vendeurs(biens, agents, vendeurs):
     if len(biens) < len(vendeurs):
         raise ValueError("Il faut au moins autant de biens que de vendeurs pour garantir qu'ils en aient un pour chaque vendeur.")
 
-    # Étape 1 : assigner un bien unique à chaque vendeur
     biens_disponibles = biens.copy()
     random.shuffle(biens_disponibles)
 
+    # Étape 1 : assigner un bien unique à chaque vendeur
     for vendeur, bien in zip(vendeurs, biens_disponibles):
         agent_choisi = random.choice(agents)
         portefeuilles.append({
@@ -211,8 +215,25 @@ def generer_portefeuilles_vendeurs(biens, agents, vendeurs):
             "vendeur.email": vendeur["email"],
             "bien.url_wikipedia": bien["url_wikipedia"]
         })
+    
+    # Mettre en cache les agents déjà utilisés
+    agents_utilises = {entry["agent.email"] for entry in portefeuilles}
+    
+    # Étape 2 : s'assurer que chaque agent ait AU MOINS un bien
+    agents_restants = [a for a in agents if a["email"] not in agents_utilises]
+    vendeurs_cycle = vendeurs.copy()
+    random.shuffle(vendeurs_cycle)
 
-    # Étape 2 : assigner les biens restants aléatoirement à n'importe quel vendeur
+    for agent in agents_restants:
+        vendeur = vendeurs_cycle.pop() if vendeurs_cycle else random.choice(vendeurs)
+        bien = biens_disponibles.pop() if biens_disponibles else random.choice(biens)
+        portefeuilles.append({
+            "agent.email": agent["email"],
+            "vendeur.email": vendeur["email"],
+            "bien.url_wikipedia": bien["url_wikipedia"]
+        })
+        
+    # Étape 3 : assigner les biens restants aléatoirement à n'importe quel vendeur
     for bien in biens_disponibles[len(vendeurs):]:
         agent_choisi = random.choice(agents)
         vendeur = random.choice(vendeurs)

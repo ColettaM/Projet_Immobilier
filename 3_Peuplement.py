@@ -19,13 +19,13 @@ from MonAppli_Immo.models import *
 
 # --- Fonctions utilitaires ---
 def normalize_email(email):
-    return unicodedata.normalize('NFKD', email).encode('ASCII', 'ignore').decode('utf-8')
+    return unicodedata.normalize('NFKD', email).encode('ASCII', 'ignore').decode('utf-8') # Normalisation de l'email 
 
 def is_valid_email(email):
-    return re.match(r"[^@]+@[^@]+\.[^@]+", email) is not None
+    return re.match(r"[^@]+@[^@]+\.[^@]+", email) is not None # Vérification de la validité de l'email
 
 def parse_bool(val):
-    return str(val).strip().lower() in ['1', 'true', 'oui', 'yes']
+    return str(val).strip().lower() in ['1', 'true', 'oui', 'yes'] # Conversion de la valeur en booléen
 
 # --- Fonctions d'import ---
 def importer_agents(path='data/agents.csv'):
@@ -113,6 +113,8 @@ def importer_biens(path='data/biens.csv'):
                     date_disponibilite=datetime.strptime(row["date_disponibilite"], "%Y-%m-%d").date(),
                     descriptions=row.get("descriptions", ""),
                     statut=row["statut"],
+                    latitude=float(row["latitude"]),
+                    longitude=float(row["longitude"]),
                     url_wikipedia=row["url_wikipedia"]
                 )
         except Exception as e:
