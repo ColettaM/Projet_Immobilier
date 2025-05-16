@@ -63,6 +63,12 @@ Passer à la création de l’interface web (qui fonctionne selon le pattern MTV
 	- Création des URLs (Routes) : dans le projet et dans l'application
 	- Création des Templates (HTML)
 
+			
+J'ai eu pas mal de soucis avec mes données parce que je n'avais pas pris en compte certains facteurs comme le fait que le couple agent-bien de mon portefeuille vendeur devait etre le meme que celui de mon portefeuille acheteur, sinon je me retrouvais avec un meme bien gerer par plusieurs agent (pas tres coherent) ou que chaque vendeur devait etre affecter d'un minimum de un bien.
+
+				##########   Date:16-Avril-2025  ##########
+
+Liste des requetes 
 
 🧑‍💼 Requêtes sur les agents et agences :
 1.**Attributs d'un agent(nom, prénom,email,telephone,agence) déterminé par son nom/prénom ou par son email**
@@ -71,31 +77,25 @@ Passer à la création de l’interface web (qui fonctionne selon le pattern MTV
 4.**Afficher le chiffre d'affaires par agence / par agent sur une période donnée(code SQL)**
 
 
-			##########   Date:28-Avril-2025  ##########
-
 🧑‍💼 Requêtes sur les vendeurs:
+0.**Afficher la liste des biens immobiliers**
 1.**Attributs d'un vendeur (nom, prénom,email,telephone...) déterminé par son nom/prénom**
 2.** Ajouter un vendeur **
 3.**Afficher les biens d'un vendeur **
+4.**Ajouter un bien à un vendeur **
+5.**Afficher les etats des biens d'un vendeur **
+6.**Afficher les rendez-vous avec le vendeur(code SQL)**
 
-
-			##########   Date:08-Mai-2025  ##########
 
 🧑‍💼 Requêtes sur les acheteurs :
 1.**Attributs d'un acheteur (nom, prénom,email,telephone...) déterminé par son nom/prénom**
 2.** Ajouter un acheteur **
-3.** Creer ou modifier les criteres Acheteurs **
-4.**Afficher les biens correspondant aux critères d'un acheteur(meme approximatif)
+3.**Afficher les biens correspondant aux critères d'un acheteur(meme approximatif)
+4.** Creer ou modifier les criteres Acheteurs **
+5 **lister les biens communiqués, visités ou refusés**
+6.** Gérer les étapes d’achat **
+7.** Recherche de biens immobiliers**
 
-
-			##########   Date:12-Mai-2025  ##########
-
-J'ai eu pas mal de soucis avec mes données parce que je n'avais pas pris en compte certains facteurs comme le fait que le couple agent-bien de mon portefeuille vendeur devait etre le meme que celui de mon portefeuille acheteur, sinon je me retrouvais avec un meme bien gerer par plusieurs agent (pas tres coherent) ou que chaque vendeur devait etre affecter d'un minimum de un bien.
-
-4.**Afficher les etats des biens d'un vendeur **
-5.**Afficher les rdv avec le vendeur (code sql) ** ( a revoir)
-
-5.** Gérer les étapes d’achat d'un acheteur **
 
 
 
