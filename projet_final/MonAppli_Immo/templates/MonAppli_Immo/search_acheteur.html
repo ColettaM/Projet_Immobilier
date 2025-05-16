@@ -1,0 +1,54 @@
+{% extends "MonAppli_Immo/base.html" %}
+
+{% block content %}
+<h2>Recherche d'acheteur
+<h4><em>Affiche les biens correspondances aux critères</em></h4></h2>
+
+<form method="get" action="{% url 'search_acheteur' %}">
+    <input type="text" name="q" placeholder="Nom / Prénom" value="{{ query }}">
+    <button type="submit">Rechercher</button>
+</form>
+ 
+<h2>Liste des Acheteurs</h2>
+<h4><em>Cliquer sur le nom pour afficher les critères de l'acheteur</em></h4>
+{% if acheteurs %}
+<table>
+    <thead>
+        <tr>
+            <th>Nom</th>
+            <th>Prénom</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Code postal</th>
+            <th>Ville</th>
+            <th>Suivi bien</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for acheteur in acheteurs %}
+        <tr>
+            <td>
+                <a href="{% url 'afficher_criteres' acheteur.id %}">
+                    {{ acheteur.nom }}
+                </a>
+            </td>
+            <td>{{ acheteur.prenom }}</td>
+            <td>{{ acheteur.email }}</td>
+            <td>{{ acheteur.telephone }}</td>
+            <td>{{ acheteur.code_postal }}</td>
+            <td>{{ acheteur.ville }}</td>
+            <td>
+                <a href="{% url 'biens_suivis_acheteur' acheteur.id %}">ℹ️info</a>
+            </td>
+        </tr>
+        {% endfor %} 
+    </tbody>
+</table>
+{% else %}
+<p>Aucun acheteur trouvé.</p>
+{% endif %}
+
+{% endblock %}
+
+
+    

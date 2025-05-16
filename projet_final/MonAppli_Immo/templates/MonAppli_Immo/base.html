@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Agence Immo</title>
+    <link rel="stylesheet" href="https://cdn.simplecss.org/simple.css">
+    </head>
+<body>
+    <header>
+        <h1>Mon Application de Gestion d'Agences Immobilière</h1>
+        <nav>
+            <a href="{% url 'accueil' %}">Accueil</a>
+            <a href="{% url 'search_agent' %}">Nos agents</a>
+            <a href="{% url 'search_vendeur' %}">Nos vendeurs</a>
+            <a href="{% url 'search_acheteur' %}">Nos acheteurs</a>
+           
+            <a href="{% url 'ajouter_agent' %}">Ajouter des agents</a>
+            <a href="{% url 'ajouter_personne' %}">Ajouter des acheteurs/vendeurs</a>
+            
+            <a href="{% url 'recherche_biens' %}">Recherche un bien</a>
+            <a href="{% url 'chiffre_affaires' %}">Chiffre d'affaire</a>
+           
+        </nav>
+    </header>
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+     <footer>
+      &copy; 2025 Mon Application Immobilière - Tous droits réservés
+    </footer>
+</body>
+</html>
+

@@ -1,0 +1,22 @@
+{% extends 'MonAppli_Immo/base.html' %}
+
+{% block content %}
+<h2>Biens commmuniqués, visités ou refusés par {{ acheteur.nom }} {{ acheteur.prenom }}</h2>
+
+{% if suivis %}
+<ul>
+    {% for suivi in suivis %}
+    <li>
+        <strong> {{ suivi.bien.type_bien|title }} </strong>  à {{ suivi.bien.prix }} € géré par  <strong> {{ suivi.agent.nom }} {{ suivi.agent.prenom }} </strong>  <br>
+        <strong> Adresse :</strong> {{ suivi.bien.adresse_annonce }}<br>
+        <strong> Statut :</strong> {{ suivi.etat|title }} le {{ suivi.date|date:"d/m/Y" }} <br>
+        <strong> Feedback :</strong> {{ suivi.feedback|default:"-" }}<br>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<p>Aucun bien communiqué, visité ou refusé pour cet acheteur.</p>
+{% endif %}
+
+<a href="javascript:history.back()">← Retour</a>
+{% endblock %}

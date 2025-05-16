@@ -1,0 +1,37 @@
+{% extends "MonAppli_Immo/base.html" %}
+
+{% block content %}
+<h2>Recherche de biens immobiliers</h2>
+
+<form method="get" class="form">
+    <fieldset>
+        <legend>Critères</legend>
+        {{ form.as_p }}
+    </fieldset>
+    <button type="submit">Rechercher</button>
+</form>
+
+<hr>
+
+<h3>Résultats trouvés : {{ nb_resultats }}</h3>
+
+<ul>
+    {% for bien in resultats %}
+        <li>
+            <strong>{{ bien.titre_annonce }}</strong><br>
+            {{ bien.adresse_annonce }}<br>
+            {{ bien.superficie }} m² | {{ bien.nb_pieces }} pièce(s)<br>
+            Prix : {{ bien.prix }} €<br>
+            Options :
+            {% if bien.parking %} Parking {% endif %}
+            {% if bien.balcon %} Balcon {% endif %}
+            {% if bien.ascenseur %} Ascenseur {% endif %}
+            {% if bien.jardin %} Jardin {% endif %}
+            {% if bien.piscine %} Piscine {% endif %}
+            <br><br>
+        </li>
+    {% empty %}
+        <li>Aucun bien ne correspond à vos critères.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

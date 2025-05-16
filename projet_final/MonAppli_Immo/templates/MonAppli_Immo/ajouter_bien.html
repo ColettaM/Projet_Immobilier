@@ -1,0 +1,10 @@
+{% extends 'MonAppli_Immo/base.html' %}
+
+{% block content %}
+<h2>Ajouter un bien à un vendeur et un agent</h2>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Ajouter</button>
+</form>{% endblock %}

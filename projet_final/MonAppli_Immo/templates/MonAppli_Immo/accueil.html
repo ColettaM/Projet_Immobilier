@@ -1,0 +1,109 @@
+{% extends "MonAppli_Immo/base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+  .container {
+    display: flex;
+    height: 80vh;
+    gap: 1rem;
+  }
+  .liste-biens {
+    width: 40%;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 1rem;
+  }
+  .carte {
+    width: 60%;
+  }
+  #map {
+    border: 1px solid #ccc;
+    height: 100%;
+    min-height: 500px;  /* important pour un affichage minimum */
+  }
+  .bien-item {
+    margin-bottom: 1rem;
+  }
+</style>
+
+<div style="margin-bottom: 1rem;">
+  <a href="{% url 'ajouter_bien' %}" class="btn-ajouter">
+    ➕ Ajouter un bien
+  </a>
+</div>
+<style>
+  .btn-ajouter {
+    display: inline-block;
+    padding: 8px 14px;
+    background-color: #007bff;
+    color: white;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+  }
+
+  .btn-ajouter:hover {
+    background-color: #0056b3;
+  }
+</style>
+
+<div class="container">
+  <div class="liste-biens">
+    <h2>Liste des biens</h2>
+    <ul>
+      {% for statut, liste_biens in biens_par_statut.items %}
+        {% for bien in liste_biens %}
+          <li class="bien-item">
+            <strong>{{ bien.titre_annonce }}</strong><br>
+            {{ bien.adresse_annonce }}<br>
+            Prix : {{ bien.prix }} €<br>
+            Superficie : {{ bien.superficie }} m²<br>
+          </li>
+        {% endfor %}
+      {% endfor %}
+      {% if biens_par_statut|length == 0 %}
+        <li>Aucun bien disponible.</li>
+      {% endif %}
+    </ul>
+  </div>
+
+  <div class="carte">
+    <h2>Carte des biens</h2>
+    <div id="map"></div>
+  </div>
+</div>
+
+<!-- Leaflet CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  integrity="sha256-sA+e2tF0n4d7+GuZK9ZRlX0kCF1zQK5NeTbsMY7fNvg="
+  crossorigin=""/>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"
+  integrity="sha256-nx8RdCfJcOlX+h1Kh5d6/N8OeXxxawO9clj34AAxys8="
+  crossorigin=""></script>
+
+<script>
+// Parse les biens passés par Django
+const biens = JSON.parse('{{ geo_biens_json|escapejs }}');
+
+// Initialisation de la carte centrée sur la France
+const map = L.map('map').setView([46.6, 2.4], 6);
+
+// Ajouter le fond de carte OpenStreetMap
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap contributors'
+}).addTo(map);
+
+// Ajouter les marqueurs
+biens.forEach(bien => {
+  const marker = L.marker([bien.lat, bien.lon]).addTo(map);
+  marker.bindPopup(`
+    <strong>${bien.titre}</strong><br>
+    ${bien.adresse}<br>
+    Prix : ${bien.prix} €<br>
+    Statut : ${bien.statut.charAt(0).toUpperCase() + bien.statut.slice(1)}
+  `);
+});
+</script>
+{% endblock %}

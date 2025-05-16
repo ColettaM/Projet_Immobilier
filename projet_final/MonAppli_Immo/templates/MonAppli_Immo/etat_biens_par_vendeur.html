@@ -1,0 +1,24 @@
+{% extends "MonAppli_Immo/base.html" %}
+
+{% block content %}
+<h2>État actuel des biens du vendeur {{ vendeur.nom }} {{ vendeur.prenom }}</h2>
+
+{% if etats_biens %}
+    <ul>
+        {% for suivi in etats_biens %}
+            <li>
+                <strong> {{ suivi.bien.titre_annonce }} </strong> <br>
+                <strong>Adresse :</strong> {{ suivi.bien.adresse_annonce }}<br>
+                <strong>Agent en charge :</strong> {{ suivi.agent.nom }} {{ suivi.agent.prenom }}<br>
+                <!-- <strong>Canal :</strong> {{ suivi.canal }} <br>-->
+                <!--<strong>Commentaire :</strong> <em>{{ suivi.commentaire|default:"Pas de commentaire" }}</em><br>-->
+                <strong>Dernier état :</strong> {{ suivi.etat }} ( le {{ suivi.date }} )
+            </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Aucun bien trouvé.</p>
+{% endif %}
+
+<a href="javascript:history.back()">← Retour</a>
+{% endblock %}

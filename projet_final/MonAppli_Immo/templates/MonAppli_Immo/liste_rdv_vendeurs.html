@@ -1,0 +1,35 @@
+{% extends 'MonAppli_Immo/base.html' %}
+
+{% block content %}
+<h2>Liste des rendez-vous avec les vendeurs</h2>
+
+{% if rendezvous %}
+  <table border="1" cellpadding="8" cellspacing="0">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Vendeur</th>
+        <th>Agent</th>
+        <th>État du bien</th>
+        <th>Commentaire</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rdv in rendezvous %}
+        <tr>
+          <td>{{ rdv.date|date:"d/m/Y" }}</td>
+          <td>{{ rdv.vendeur_nom }} {{ rdv.vendeur_prenom }}</td>
+          <td>{{ rdv.agent_nom }} {{ rdv.agent_prenom }}</td>
+          <td>{{ rdv.etat }}</td>
+          <td>{{ rdv.commentaire|default:"(Aucun commentaire)" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% else %}
+  <p>Aucun rendez-vous trouvé.</p>
+{% endif %}
+
+<a href="javascript:history.back()">← Retour</a>
+
+{% endblock %}

@@ -1,0 +1,38 @@
+{% extends "MonAppli_Immo/base.html" %}
+
+{% block content %}
+<h2>Biens de {{ vendeur.nom }} {{ vendeur.prenom }}</h2>
+
+{% if biens %}
+<table border="1">
+    <thead>
+        <tr>
+            <th>Type de bien</th>
+            <th>Catégorie</th>
+            <th>Statut</th>
+            <th>Superficie</th>
+            <th>Prix</th>
+            <th>Adresse</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for bien in biens %}
+        <tr>
+            <td>{{ bien.type_bien }}</td>
+            <td>{{ bien.categorie }}</td>
+            <td>{{ bien.statut }}</td>
+            <td>{{ bien.superficie }} m²</td>
+            <td>{{ bien.prix }} €</td>
+            <td>{{ bien.adresse_annonce }}</td>
+            <td>{{ bien.descriptions }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<p>Aucun bien trouvé pour ce vendeur.</p>
+{% endif %}
+
+<a href="{% url 'search_vendeur' %}">← Retour à la recherche de vendeurs</a>
+{% endblock %}

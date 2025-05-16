@@ -1,0 +1,16 @@
+acheteur.id,type_bien,categorie,nb_pieces_min,nb_pieces_max,superficie_min,superficie_max,budget_max,parking,balcon,ascenseur,jardin,piscine,code_postal,ville,date_emmenagement
+11,appartement,location,1,9,132,249,189013.86,True,False,False,False,False,29450,Le Tréhou,2025-08-13
+10,maison,vente,1,8,123,552,1723400.4,False,False,False,True,False,94270,Le Kremlin-Bicêtre,2025-07-02
+12,local commercial,vente,2,10,111,578,1846561.89,False,True,True,True,True,50760,Sainte-Geneviève,2025-06-27
+8,maison,vente,1,5,101,329,971487.99,False,True,False,True,False,88630,Clérey-la-Côte,2025-07-06
+15,local commercial,vente,2,7,138,304,846245.77,True,True,True,True,True,57400,Buhl-Lorraine,2025-09-07
+5,local commercial,vente,1,6,107,156,1158528.91,True,False,True,False,False,57330,Escherange,2025-06-21
+3,local commercial,vente,1,10,90,545,371975.59,True,False,True,True,False,26310,Miscon,2025-08-05
+2,maison,vente,3,8,85,422,164334.02,True,True,True,True,False,65670,Bazordan,2025-07-18
+13,appartement,location,1,6,130,217,1343511.77,False,False,False,True,True,49400,Rou-Marson,2025-06-24
+1,maison,location,3,8,92,149,1075453.75,True,False,False,True,False,41700,Cour-Cheverny,2025-06-23
+9,appartement,location,2,5,136,582,1086618.64,False,True,True,True,True,72540,Amné,2025-09-06
+4,maison,location,3,4,97,252,231211.17,False,True,True,False,False,27140,Bazincourt-sur-Epte,2025-07-21
+7,appartement,location,1,6,144,414,502542.06,True,True,False,False,True,14690,La Pommeraye,2025-08-08
+6,bureau,vente,1,7,96,442,1959603.99,False,True,False,True,True,51220,Brimont,2025-08-08
+14,maison,vente,1,4,149,187,1669256.2,True,True,False,False,False,41250,Chambord,2025-06-20

@@ -1,0 +1,22 @@
+{% extends "MonAppli_Immo/base.html" %}
+
+{% block content %}
+<h2>Biens correspondant aux critères de {{ acheteur.nom }} {{ acheteur.prenom }}</h2>
+
+{% if biens %}
+    <ul>
+        {% for bien in biens %}
+        <li>
+            <strong>{{ bien.titre_annonce }} - {{ bien.categorie}} </strong><br>
+            Prix: {{ bien.prix}} € | {{ bien.nb_pieces }} pièces | {{ bien.superficie }} m²<br>
+            Parking: {{ bien.parking|yesno:"Oui,Non" }} | Balcon: {{ bien.balcon|yesno:"Oui,Non"}} | Ascenseur: {{ bien.ascenseur|yesno:"Oui,Non"}} | Jardin: {{ bien.jardin|yesno:"Oui,Non"}} | Piscine: {{ bien.piscine|yesno:"Oui,Non"}} <br>
+            Adresse: {{ bien.adresse_annonce}}
+        </li>
+        {% endfor %}
+    </ul>
+{% else %}
+    <p>Aucun bien ne correspond aux critères de cet acheteur.</p>
+{% endif %}
+
+<a href="{% url 'search_acheteur' %}">← Retour à la recherche</a>
+{% endblock %}
