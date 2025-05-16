@@ -74,6 +74,8 @@ CREATE TABLE bien_immobilier (
     date_disponibilite DATE NOT NULL,
     descriptions TEXT,
     statut VARCHAR(20) NOT NULL CHECK (statut IN ('disponible', 'sous offre', 'vendu', 'loué', 'retiré')), -- Statut du bien
+    latitude DECIMAL(9, 6) NOT NULL,  -- Latitude de l'emplacement du bien
+    longitude DECIMAL(9, 6) NOT NULL,  -- Longitude de l'emplacement du bien
     url_wikipedia URL NOT NULL -- URL de la page Wikipedia du bien
 
 ); 
