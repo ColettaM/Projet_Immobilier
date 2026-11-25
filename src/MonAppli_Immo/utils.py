@@ -1,12 +1,11 @@
 # utils.py
 import os
 from django.conf import settings
-from pathlib import Path
 import csv
 from math import radians, sin, cos, sqrt, atan2
 
 
-VILLES_CSV_PATH = Path(settings.BASE_DIR) / 'data' / 'villes.csv'
+VILLES_CSV_PATH = settings.DATA_DIR / 'reference' / 'villes.csv'
 if not VILLES_CSV_PATH.exists():
     raise FileNotFoundError(f"Fichier villes.csv introuvable : {VILLES_CSV_PATH}")
 

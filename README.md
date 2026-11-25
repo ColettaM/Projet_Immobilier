@@ -10,9 +10,10 @@ Application Django de gestion immobilière pour un réseau d’agences, réalis�
 
 ## Structure
 
-- [Application Django](projet_final/), avec ses modèles, vues, formulaires et migrations.
-- [Schéma relationnel](1.Shema_relationnel.pdf) et [modèle SQL](1.Modele_Relationnel.sql).
-- [Données de démonstration](projet_final/data/) et [script d’import](projet_final/peuplement.py).
+- [Application Django](src/), avec ses modèles, vues, formulaires et migrations.
+- [Schéma relationnel](docs/base-de-donnees/schema-relationnel.pdf) et [modèle SQL](docs/base-de-donnees/modele-relationnel.sql).
+- [Données de démonstration](data/demo/) et [référentiels géographiques](data/reference/).
+- [Suivi du projet](docs/suivi-projet.txt) et [archives](docs/archives/).
 
 ## Lancement local
 
@@ -28,10 +29,21 @@ export POSTGRES_USER=postgres
 read -rsp 'Mot de passe PostgreSQL : ' POSTGRES_PASSWORD
 export POSTGRES_PASSWORD
 
-cd projet_final
-python manage.py migrate
-python peuplement.py  # facultatif, charge les données de démonstration
-python manage.py runserver
+python src/manage.py migrate
+python src/manage.py charger_donnees  # facultatif
+python src/manage.py runserver
 ```
 
 Ouvre [http://127.0.0.1:8000/](http://127.0.0.1:8000/). PostgreSQL utilise par défaut `localhost:5432`. Tu peux régler l’adresse avec `POSTGRES_HOST` et `POSTGRES_PORT`, et définir `DJANGO_SECRET_KEY` pour conserver la même clé entre les redémarrages.
+
+## Générer des données d’exemple
+
+Les CSV fournis dans `data/demo/` couvrent aussi les suivis et les critères.
+La génération produit un jeu fictif de base distinct dans `data/generated/`
+et laisse les CSV de démonstration en place. Pour charger ce jeu, utilise une
+base de test dédiée.
+
+```bash
+python src/manage.py generer_donnees
+python src/manage.py charger_donnees --data-dir data/generated
+```
