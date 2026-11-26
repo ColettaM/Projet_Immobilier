@@ -47,3 +47,6 @@ base de test dédiée.
 python src/manage.py generer_donnees
 python src/manage.py charger_donnees --data-dir data/generated
 ```
+
+## Auteur 
+Coletta Moutsiha
